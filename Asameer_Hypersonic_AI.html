@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Asameer HyperSonic AI — Institutional Grade</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07080d; --bg2:#0c0e16; --bg3:#111420; --bg4:#161b28;
+  --border:#1a2035; --border2:#222840;
+  --g1:#00ffa3; --g2:#00d4ff; --g3:#7c6ff7;
+  --red:#ff3d5a; --yellow:#ffd11a; --orange:#ff8c42;
+  --text:#dde3f0; --text2:#7b8db0; --text3:#3a4560;
+  --card:#0d1020;
+  --font:'DM Sans',sans-serif; --mono:'JetBrains Mono',monospace; --head:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCROLLBAR ──────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ── AUTH ───────────────────────────────────── */
+#authOverlay{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(ellipse at 20% 50%,#0a1228 0%,#07080d 60%);
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.auth-box{
+  width:420px;max-width:100%;
+  background:linear-gradient(145deg,#111520,#0d1020);
+  border:1px solid var(--border2);border-radius:20px;padding:36px 30px;
+  box-shadow:0 32px 100px rgba(0,0,0,0.7),0 0 0 1px rgba(0,255,163,0.04);
+  position:relative;overflow:hidden;
+}
+.auth-box::before{
+  content:'';position:absolute;top:-80px;right:-80px;width:220px;height:220px;
+  border-radius:50%;background:radial-gradient(circle,rgba(0,255,163,0.06),transparent 70%);
+  pointer-events:none;
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+.auth-logo-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 6px 24px rgba(0,255,163,0.25);
+}
+.auth-logo-text{font-family:var(--head);font-size:16px;font-weight:800;letter-spacing:0.02em;}
+.auth-logo-sub{font-size:10px;color:var(--text2);margin-top:2px;letter-spacing:0.08em;text-transform:uppercase;}
+.auth-title{font-family:var(--head);font-size:22px;font-weight:800;margin-bottom:6px;}
+.auth-desc{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6;}
+.auth-tabs{display:flex;margin-bottom:22px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.auth-tab{flex:1;padding:9px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all 0.2s;}
+.auth-tab.active{background:linear-gradient(135deg,var(--g1),var(--g2));color:#000;}
+.inp-grp{margin-bottom:13px;}
+.inp-grp label{display:block;font-size:10px;color:var(--text2);margin-bottom:5px;letter-spacing:0.06em;font-weight:600;text-transform:uppercase;}
+.inp-grp input{width:100%;padding:11px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:all 0.2s;}
+.inp-grp input:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(0,255,163,0.08);}
+.btn-auth{
+  width:100%;padding:13px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+  color:#000;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;
+  transition:all 0.2s;font-family:var(--head);letter-spacing:0.02em;
+}
+.btn-auth:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,255,163,0.3);}
+.auth-err{color:var(--red);font-size:12px;margin-top:8px;display:none;}
+.auth-ok{color:var(--g1);font-size:12px;margin-top:8px;display:none;}
+.invite-note{font-size:11px;color:var(--text3);margin-top:14px;text-align:center;line-height:1.5;}
+
+/* ── MAIN APP ───────────────────────────────── */
+#mainApp{display:none;}
+
+/* ── TOP NAV ────────────────────────────────── */
+.topnav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(7,8,13,0.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:54px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.nav-logo-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 14px rgba(0,255,163,0.2);}
+.nav-logo-name{font-family:var(--head);font-size:14px;font-weight:800;letter-spacing:0.04em;}
+.nav-badge{font-size:9px;background:linear-gradient(90deg,var(--g3),var(--g2));color:#fff;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.06em;}
+.nav-center{display:flex;gap:2px;}
+.nav-link{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;border:none;background:none;}
+.nav-link:hover,.nav-link.active{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--g1);}
+.nav-right{display:flex;align-items:center;gap:9px;}
+.nav-user{display:flex;align-items:center;gap:7px;padding:4px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:12px;font-weight:500;}
+.nav-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--g3),var(--g2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--g1);animation:pulse 2s infinite;}
+.nav-settings-btn{width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,163,0.4);}50%{opacity:0.6;box-shadow:0 0 0 5px rgba(0,255,163,0);}}
+
+/* ── MARKET BAR ─────────────────────────────── */
+.market-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 20px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;
+  display:flex;align-items:center;height:34px;
+}
+.market-bar::-webkit-scrollbar{display:none;}
+.mkt-item{display:inline-flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--border);height:34px;}
+.mkt-name{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:0.04em;}
+.mkt-val{font-size:12px;font-weight:600;font-family:var(--mono);}
+.mkt-chg{font-size:11px;font-weight:500;font-family:var(--mono);}
+.pos{color:var(--g1);}
+.neg{color:var(--red);}
+.neu{color:var(--yellow);}
+
+/* ── PAGES ──────────────────────────────────── */
+.page{display:none;padding:20px;max-width:1260px;margin:0 auto;}
+.page.active{display:block;}
+
+/* ── HERO ───────────────────────────────────── */
+.hero{
+  background:linear-gradient(135deg,rgba(0,255,163,0.05) 0%,rgba(0,212,255,0.03) 50%,rgba(124,111,247,0.05) 100%);
+  border:1px solid var(--border);border-radius:16px;padding:30px 26px;
+  margin-bottom:20px;position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;
+  border-radius:50%;background:radial-gradient(circle,rgba(124,111,247,0.08),transparent 70%);
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,255,163,0.08);border:1px solid rgba(0,255,163,0.2);
+  color:var(--g1);font-size:11px;font-weight:600;padding:3px 10px;
+  border-radius:20px;margin-bottom:12px;letter-spacing:0.05em;
+}
+.hero-title{font-family:var(--head);font-size:26px;font-weight:800;line-height:1.25;margin-bottom:8px;}
+.hero-title span{
+  background:linear-gradient(90deg,var(--g1),var(--g2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{font-size:13px;color:var(--text2);line-height:1.7;max-width:580px;}
+.hero-modules{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+.hero-mod{
+  display:flex;align-items:center;gap:5px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:5px 10px;font-size:11px;color:var(--text2);cursor:default;
+}
+.hero-mod span:first-child{font-size:13px;}
+
+/* ── SEARCH ─────────────────────────────────── */
+.search-wrap{position:relative;margin-bottom:20px;}
+.search-input{
+  width:100%;padding:13px 16px 13px 44px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
+  color:var(--text);font-family:var(--font);font-size:14px;outline:none;
+  transition:all 0.2s;
+}
+.search-input:focus{border-color:var(--g1);box-shadow:0 0 0 4px rgba(0,255,163,0.07);}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:17px;}
+.search-results{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
+  z-index:100;max-height:280px;overflow-y:auto;display:none;
+  box-shadow:0 16px 50px rgba(0,0,0,0.4);
+}
+.search-results.open{display:block;}
+.sr-item{padding:10px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);transition:background 0.1s;}
+.sr-item:last-child{border-bottom:none;}
+.sr-item:hover{background:rgba(255,255,255,0.02);}
+.sr-name{font-size:13px;font-weight:500;}
+.sr-sym{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px;}
+
+/* ── GRID CARDS ─────────────────────────────── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px;margin-bottom:20px;}
+.metric-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 13px;
+  transition:border-color 0.2s;
+}
+.metric-card:hover{border-color:var(--border2);}
+.mc-icon{font-size:18px;margin-bottom:8px;}
+.mc-val{font-size:18px;font-weight:700;font-family:var(--mono);}
+.mc-lbl{font-size:10px;color:var(--text2);margin-top:3px;letter-spacing:0.03em;}
+.mc-chg{font-size:11px;font-weight:600;margin-top:5px;}
+
+/* ── SECTION ────────────────────────────────── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-family:var(--head);font-size:14px;font-weight:700;}
+.sec-sub{font-size:11px;color:var(--text2);}
+.sec-action{font-size:12px;color:var(--g1);cursor:pointer;font-weight:500;}
+
+/* ── SCREENER FILTERS ────────────────────────── */
+.screener-filters{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;}
+.filter-btn{
+  padding:4px 12px;border-radius:7px;font-size:11px;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;
+}
+.filter-btn.active,.filter-btn:hover{border-color:var(--g1);color:var(--g1);background:rgba(0,255,163,0.06);}
+
+/* ── STOCK TABLE ────────────────────────────── */
+.stock-table{width:100%;border-collapse:collapse;font-size:12px;}
+.stock-table th{padding:9px 11px;text-align:left;color:var(--text3);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);background:var(--bg2);}
+.stock-table td{padding:9px 11px;border-bottom:1px solid rgba(26,32,53,0.6);vertical-align:middle;}
+.stock-table tr:hover td{background:rgba(255,255,255,0.015);cursor:pointer;}
+.stock-name{font-weight:600;font-size:13px;}
+.stock-sym{font-size:10px;color:var(--text3);margin-top:1px;font-family:var(--mono);}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:0.04em;}
+.badge-buy{background:rgba(0,255,163,0.1);color:var(--g1);border:1px solid rgba(0,255,163,0.2);}
+.badge-hold{background:rgba(255,209,26,0.1);color:var(--yellow);border:1px solid rgba(255,209,26,0.2);}
+.badge-sell{background:rgba(255,61,90,0.1);color:var(--red);border:1px solid rgba(255,61,90,0.2);}
+.conf-bar{width:56px;height:3px;background:var(--border);border-radius:2px;display:inline-block;overflow:hidden;}
+.conf-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--g1),var(--g2));}
+
+/* ── AI PANEL ───────────────────────────────── */
+.ai-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:16px;}
+.ai-panel-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ai-panel-title{font-family:var(--head);font-size:14px;font-weight:700;}
+.ai-output{font-size:12px;line-height:1.9;white-space:pre-wrap;font-family:var(--mono);color:var(--text);}
+.spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--g1);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ai-loading{color:var(--text2);font-size:12px;display:flex;align-items:center;gap:8px;}
+
+/* ── HYPERSONIC PANEL ───────────────────────── */
+.hyper-panel{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:16px;overflow-y:auto;
+}
+.hyper-panel.open{display:flex;}
+.hyper-modal{
+  width:900px;max-width:100%;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:18px;
+  box-shadow:0 40px 120px rgba(0,0,0,0.6),0 0 0 1px rgba(0,255,163,0.04);
+  overflow:hidden;margin-top:20px;
+}
+.hyper-header{
+  background:linear-gradient(135deg,rgba(0,255,163,0.08),rgba(0,212,255,0.05));
+  border-bottom:1px solid var(--border);padding:20px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hyper-stock-name{font-family:var(--head);font-size:20px;font-weight:800;}
+.hyper-stock-meta{font-size:12px;color:var(--text2);margin-top:3px;}
+.hyper-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.15s;}
+.hyper-close:hover{background:var(--bg2);color:var(--text);}
+
+/* MODULE TABS */
+.mod-tabs{
+  display:flex;overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid var(--border);background:var(--bg2);
+}
+.mod-tabs::-webkit-scrollbar{display:none;}
+.mod-tab{
+  flex-shrink:0;padding:11px 16px;font-size:11px;font-weight:600;
+  color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all 0.15s;white-space:nowrap;border:none;background:none;
+  letter-spacing:0.02em;
+}
+.mod-tab:hover{color:var(--text);}
+.mod-tab.active{color:var(--g1);border-bottom:2px solid var(--g1);}
+
+.mod-content{display:none;padding:22px;}
+.mod-content.active{display:block;}
+
+.mod-run-btn{
+  display:flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,rgba(0,255,163,0.12),rgba(0,212,255,0.08));
+  border:1px solid rgba(0,255,163,0.25);border-radius:9px;
+  padding:9px 16px;font-size:12px;font-weight:700;color:var(--g1);
+  cursor:pointer;transition:all 0.2s;margin-bottom:14px;
+}
+.mod-run-btn:hover{background:rgba(0,255,163,0.18);transform:translateY(-1px);}
+.mod-run-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+.run-all-btn{
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+  border:none;border-radius:10px;padding:11px 20px;
+  font-family:var(--head);font-size:13px;font-weight:700;color:#000;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px;
+}
+.run-all-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,255,163,0.3);}
+.run-all-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* ── SECTOR GRID ────────────────────────────── */
+.sector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.sector-card{
+  background:var(--card);border:1px solid var(--border);border-radius:11px;
+  padding:13px 12px;cursor:pointer;transition:all 0.15s;
+}
+.sector-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.sc-name{font-size:12px;font-weight:600;margin-bottom:5px;}
+.sc-status{font-size:10px;margin-bottom:4px;}
+.sc-growth{font-size:11px;font-family:var(--mono);font-weight:600;}
+.sc-risk{font-size:10px;color:var(--text3);margin-top:3px;}
+
+/* ── NEWS ───────────────────────────────────── */
+.news-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px;margin-bottom:10px;}
+.news-headline{font-size:13px;font-weight:600;margin-bottom:5px;line-height:1.4;}
+.news-meta{font-size:11px;color:var(--text3);display:flex;gap:12px;}
+.news-impact{font-size:11px;margin-top:7px;color:var(--text2);line-height:1.5;}
+
+/* ── ALERTS ─────────────────────────────────── */
+.alert-card{background:var(--card);border-left:3px solid var(--red);border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:9px;}
+.alert-card.medium{border-left-color:var(--yellow);}
+.alert-card.low{border-left-color:var(--g1);}
+
+/* ── PORTFOLIO ──────────────────────────────── */
+.port-card{
+  background:var(--card);border:1px solid var(--border);border-radius:11px;
+  padding:14px;margin-bottom:10px;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+
+/* ── FORMS ──────────────────────────────────── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;}
+.form-input{
+  padding:10px 13px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:9px;color:var(--text);font-family:var(--font);font-size:13px;
+  outline:none;width:100%;transition:all 0.2s;
+}
+.form-input:focus{border-color:var(--g1);}
+
+/* ── BUTTONS ────────────────────────────────── */
+.btn-sm{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--g1),var(--g2));color:#000;transition:all 0.15s;}
+.btn-sm:hover{opacity:0.88;}
+.btn-sm.secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-sm.danger{background:rgba(255,61,90,0.1);color:var(--red);border:1px solid rgba(255,61,90,0.2);}
+
+/* ── SETTINGS MODAL ─────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{width:460px;max-width:100%;max-height:90vh;overflow-y:auto;background:var(--bg3);border:1px solid var(--border2);border-radius:18px;padding:26px;box-shadow:0 24px 80px rgba(0,0,0,0.5);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.modal-title{font-family:var(--head);font-size:15px;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;}
+.settings-section{margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:18px;}
+.settings-section:last-child{border-bottom:none;}
+.settings-section-title{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;font-weight:600;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.settings-row-lbl{font-size:13px;}
+.settings-row-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.toggle{width:38px;height:21px;border-radius:11px;border:none;cursor:pointer;transition:background 0.2s;position:relative;background:var(--border2);}
+.toggle.on{background:var(--g1);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left 0.2s;}
+.toggle.on::after{left:20px;}
+.invite-item{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;background:var(--bg2);border-radius:7px;margin-bottom:5px;font-size:12px;}
+.invite-del{color:var(--red);cursor:pointer;font-size:13px;background:none;border:none;}
+.invite-add-row{display:flex;gap:7px;margin-top:8px;}
+.invite-add-input{flex:1;padding:7px 11px;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;}
+.invite-add-input:focus{border-color:var(--g1);}
+.code-badge{font-family:var(--mono);font-size:13px;background:var(--bg2);border:1px solid var(--border);padding:5px 11px;border-radius:6px;color:var(--g1);letter-spacing:0.1em;}
+
+/* ── BOTTOM NAV ─────────────────────────────── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(7,8,13,0.97);border-top:1px solid var(--border);padding:7px 4px 12px;z-index:100;}
+@media(max-width:600px){
+  .bottom-nav{display:flex;justify-content:space-around;}
+  .nav-center{display:none;}
+  .page{padding:14px 12px 90px;}
+  .topnav{padding:0 12px;}
+  .form-row{grid-template-columns:1fr;}
+  .hero-modules{display:none;}
+  .hyper-modal{margin-top:0;border-radius:12px;}
+}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 10px;border-radius:8px;}
+.bn-item.active{background:rgba(0,255,163,0.07);}
+.bn-icon{font-size:18px;}
+.bn-lbl{font-size:9px;color:var(--text2);font-weight:500;}
+.bn-item.active .bn-lbl{color:var(--g1);}
+
+/* ── MODULE OUTPUT SECTIONS ─────────────────── */
+.mod-section-title{
+  font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;
+  letter-spacing:0.07em;margin-bottom:8px;margin-top:16px;padding-bottom:5px;
+  border-bottom:1px solid var(--border);
+}
+.mod-section-title:first-child{margin-top:0;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ AUTH ═══════════════════════ -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">⚡</div>
+      <div>
+        <div class="auth-logo-text">Asameer HyperSonic AI</div>
+        <div class="auth-logo-sub">8-Module Institutional Intelligence</div>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tabInvite" onclick="switchTab('invite')">Invite Code</button>
+    </div>
+    <div id="loginForm">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-desc">Goldman Sachs • Morgan Stanley • BlackRock • Bridgewater — sab ek jagah 🔒</div>
+      <div class="inp-grp"><label>Username</label><input type="text" id="loginUser" placeholder="username daalo" /></div>
+      <div class="inp-grp"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+      <button class="btn-auth" onclick="doLogin()">🚀 Enter HyperSonic AI</button>
+      <div class="auth-err" id="loginErr">❌ Galat username ya password</div>
+    </div>
+    <div id="inviteForm" style="display:none">
+      <div class="auth-title">Invite Code se join karein</div>
+      <div class="auth-desc">Admin se code lo, phir apna account banao</div>
+      <div class="inp-grp"><label>Invite Code</label><input type="text" id="invCode" placeholder="ASAM-XXXX" style="text-transform:uppercase" /></div>
+      <div class="inp-grp"><label>Aapka Naam</label><input type="text" id="invName" placeholder="Apna naam..." /></div>
+      <div class="inp-grp"><label>Password (min 6 char)</label><input type="password" id="invPass" placeholder="Strong password daalo" /></div>
+      <button class="btn-auth" onclick="doSignup()">Account Banao →</button>
+      <div class="auth-err" id="inviteErr"></div>
+      <div class="auth-ok" id="inviteOk"></div>
+    </div>
+    <div class="invite-note">🔒 Private platform — sirf invited users ka access hai</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MAIN APP ═══════════════════════ -->
+<div id="mainApp">
+  <nav class="topnav">
+    <div class="nav-logo" onclick="navigate('home')">
+      <div class="nav-logo-icon">⚡</div>
+      <div class="nav-logo-name">Asameer AI</div>
+      <div class="nav-badge">HYPERSONIC</div>
+    </div>
+    <div class="nav-center">
+      <button class="nav-link active" onclick="navigate('home')" id="nl-home">Home</button>
+      <button class="nav-link" onclick="navigate('stocks')" id="nl-stocks">Screener</button>
+      <button class="nav-link" onclick="navigate('portfolio')" id="nl-portfolio">Portfolio</button>
+      <button class="nav-link" onclick="navigate('sectors')" id="nl-sectors">Sectors</button>
+      <button class="nav-link" onclick="navigate('news')" id="nl-news">News</button>
+      <button class="nav-link" onclick="navigate('alerts')" id="nl-alerts">Alerts</button>
+    </div>
+    <div class="nav-right">
+      <div class="live-dot"></div>
+      <div class="nav-user">
+        <div class="nav-avatar" id="navAvatar">U</div>
+        <span id="navName">User</span>
+      </div>
+      <div class="nav-settings-btn" onclick="openSettings()">⚙️</div>
+    </div>
+  </nav>
+
+  <!-- MARKET BAR -->
+  <div class="market-bar">
+    <div class="mkt-item"><span class="mkt-name">NIFTY 50</span><span class="mkt-val pos" id="nifty">24,850</span><span class="mkt-chg pos" id="niftyChg">+0.8%</span></div>
+    <div class="mkt-item"><span class="mkt-name">SENSEX</span><span class="mkt-val pos" id="sensex">81,920</span><span class="mkt-chg pos">+0.7%</span></div>
+    <div class="mkt-item"><span class="mkt-name">BANK NIFTY</span><span class="mkt-val pos" id="banknifty">52,340</span><span class="mkt-chg neu">+0.3%</span></div>
+    <div class="mkt-item"><span class="mkt-name">₹/USD</span><span class="mkt-val neu">84.12</span><span class="mkt-chg neu">+0.04</span></div>
+    <div class="mkt-item"><span class="mkt-name">GOLD</span><span class="mkt-val pos">₹72,400</span><span class="mkt-chg pos">+0.3%</span></div>
+    <div class="mkt-item"><span class="mkt-name">CRUDE</span><span class="mkt-val neg">$82.4</span><span class="mkt-chg neg">-0.8%</span></div>
+    <div class="mkt-item"><span class="mkt-name">MIDCAP</span><span class="mkt-val pos">44,210</span><span class="mkt-chg pos">+1.1%</span></div>
+    <div class="mkt-item"><span class="mkt-name">SMALLCAP</span><span class="mkt-val pos">14,820</span><span class="mkt-chg pos">+1.4%</span></div>
+  </div>
+
+  <!-- ═══ HOME PAGE ═══ -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-badge">⚡ HyperSonic • 8 Institutional Modules • BSE/NSE All Stocks</div>
+      <div class="hero-title">India ka Most Advanced <span>Investment AI</span></div>
+      <div class="hero-sub">BSE/NSE mein listed har company ka Goldman Sachs + Morgan Stanley + BlackRock + Bridgewater + JPMorgan + Citadel + Harvard + Bain — sab ek click mein. Sirf stock ka naam likho, baki AI sambhal lega.</div>
+      <div class="hero-modules">
+        <div class="hero-mod"><span>📊</span><span>Goldman Screener</span></div>
+        <div class="hero-mod"><span>💎</span><span>Morgan DCF</span></div>
+        <div class="hero-mod"><span>🛡️</span><span>Bridgewater Risk</span></div>
+        <div class="hero-mod"><span>📈</span><span>JPMorgan Earnings</span></div>
+        <div class="hero-mod"><span>🏛️</span><span>BlackRock Portfolio</span></div>
+        <div class="hero-mod"><span>⚡</span><span>Citadel Technical</span></div>
+        <div class="hero-mod"><span>🎓</span><span>Harvard Dividend</span></div>
+        <div class="hero-mod"><span>🔬</span><span>Bain Competitive</span></div>
+      </div>
+    </div>
+
+    <!-- Search any BSE stock -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="homeSearch" placeholder="Koi bhi BSE/NSE stock search karo — RELIANCE, TATASTEEL, ZOMATO, IRFC..." oninput="searchStocks(this.value)" onfocus="if(this.value)searchStocks(this.value)" />
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- Market Overview -->
+    <div class="sec-hdr">
+      <div><div class="sec-title">📊 Market Overview</div><div class="sec-sub">Live Indian Market</div></div>
+      <div class="sec-action" onclick="updateMarketTicker()">↻ Refresh</div>
+    </div>
+    <div class="cards-grid">
+      <div class="metric-card"><div class="mc-icon">📈</div><div class="mc-val pos" id="c-nifty">24,850</div><div class="mc-lbl">NIFTY 50</div><div class="mc-chg pos">+0.8%</div></div>
+      <div class="metric-card"><div class="mc-icon">🏦</div><div class="mc-val pos" id="c-sensex">81,920</div><div class="mc-lbl">SENSEX</div><div class="mc-chg pos">+0.7%</div></div>
+      <div class="metric-card"><div class="mc-icon">📡</div><div class="mc-val neu">Bullish</div><div class="mc-lbl">Market Mood</div><div class="mc-chg pos">+72%</div></div>
+      <div class="metric-card"><div class="mc-icon">💹</div><div class="mc-val pos">₹84.1</div><div class="mc-lbl">USD/INR</div><div class="mc-chg neu">Stable</div></div>
+    </div>
+
+    <!-- Daily AI -->
+    <div class="ai-panel" id="aiDailyPanel">
+      <div class="ai-panel-header">
+        <span>🧠</span>
+        <span class="ai-panel-title">AI Daily Market Intelligence</span>
+        <button class="btn-sm secondary" style="margin-left:auto;font-size:10px;padding:4px 9px;" onclick="loadDailyAI()">↻ Refresh</button>
+      </div>
+      <div id="dailyAIContent"><div class="ai-loading"><div class="spinner"></div>Market intelligence load ho rahi hai...</div></div>
+    </div>
+
+    <!-- Top Opportunities -->
+    <div class="sec-hdr" style="margin-top:20px;">
+      <div><div class="sec-title">🚀 Top Opportunities</div><div class="sec-sub">AI selected BUY candidates</div></div>
+      <div class="sec-action" onclick="navigate('stocks')">Full Screener →</div>
+    </div>
+    <div class="screener-filters">
+      <button class="filter-btn active" onclick="filterStocks('all',this)">All</button>
+      <button class="filter-btn" onclick="filterStocks('buy',this)">BUY ✅</button>
+      <button class="filter-btn" onclick="filterStocks('hold',this)">HOLD ⏸️</button>
+      <button class="filter-btn" onclick="filterStocks('large',this)">Large Cap</button>
+      <button class="filter-btn" onclick="filterStocks('mid',this)">Mid Cap</button>
+      <button class="filter-btn" onclick="filterStocks('small',this)">Small Cap</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="stock-table" id="homeScreener">
+        <thead><tr><th>Company</th><th>Price</th><th>Change</th><th>Decision</th><th>Profit %</th><th>Hold</th><th>Confidence</th><th>Action</th></tr></thead>
+        <tbody id="screenerBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ SCREENER PAGE ═══ -->
+  <div class="page" id="page-stocks">
+    <div class="sec-hdr" style="margin-bottom:16px;">
+      <div><div class="sec-title">📊 BSE/NSE Full Screener</div><div class="sec-sub">5000+ Stocks — AI Analyzed</div></div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="screenerSearch" placeholder="Company ya BSE/NSE symbol search karo..." oninput="screenerFilter(this.value)" />
+    </div>
+    <div class="screener-filters">
+      <button class="filter-btn active" onclick="filterStocks('all',this)">All Stocks</button>
+      <button class="filter-btn" onclick="filterStocks('buy',this)">BUY</button>
+      <button class="filter-btn" onclick="filterStocks('hold',this)">HOLD</button>
+      <button class="filter-btn" onclick="filterStocks('it',this)">IT</button>
+      <button class="filter-btn" onclick="filterStocks('banking',this)">Banking</button>
+      <button class="filter-btn" onclick="filterStocks('pharma',this)">Pharma</button>
+      <button class="filter-btn" onclick="filterStocks('energy',this)">Energy</button>
+      <button class="filter-btn" onclick="filterStocks('auto',this)">Auto</button>
+      <button class="filter-btn" onclick="filterStocks('infrastructure',this)">Infra</button>
+      <button class="filter-btn" onclick="filterStocks('power',this)">Power</button>
+      <button class="filter-btn" onclick="filterStocks('fmcg',this)">FMCG</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="stock-table">
+        <thead><tr><th>#</th><th>Company</th><th>Sector</th><th>Price</th><th>1Y Return</th><th>Decision</th><th>Profit Range</th><th>Hold</th><th>Conf.</th><th>Action</th></tr></thead>
+        <tbody id="fullScreenerBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ PORTFOLIO PAGE ═══ -->
+  <div class="page" id="page-portfolio">
+    <div class="sec-title" style="margin-bottom:16px;">💼 Portfolio Manager + AI Analysis</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px;margin-bottom:15px;">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Portfolio mein stock add karo — AI turant analyze karega</div>
+      <div class="form-row">
+        <input class="form-input" id="pStock" placeholder="Stock (e.g. RELIANCE)" />
+        <input class="form-input" id="pPrice" placeholder="Buy price ₹" type="number" />
+      </div>
+      <div class="form-row">
+        <input class="form-input" id="pQty" placeholder="Quantity" type="number" />
+        <input class="form-input" id="pDate" type="date" />
+      </div>
+      <button class="btn-sm" style="width:100%;padding:11px;" onclick="addToPortfolio()">➕ Add & AI Analyze</button>
+    </div>
+    <div id="portfolioList"></div>
+    <div class="ai-panel" id="portAiPanel" style="display:none;">
+      <div class="ai-panel-header"><span>🧠</span><span class="ai-panel-title" style="margin-left:8px;">Portfolio AI Analysis</span></div>
+      <div id="portAiOutput"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTORS PAGE ═══ -->
+  <div class="page" id="page-sectors">
+    <div class="sec-title" style="margin-bottom:16px;">🗂️ All India Sectors</div>
+    <div class="sector-grid" id="sectorGrid"></div>
+    <div class="ai-panel" id="sectorAiPanel" style="display:none;margin-top:16px;">
+      <div class="ai-panel-header"><span>🧠</span><span class="ai-panel-title" id="sectorAiTitle" style="margin-left:8px;">Sector Analysis</span></div>
+      <div id="sectorAiOutput"></div>
+    </div>
+  </div>
+
+  <!-- ═══ NEWS PAGE ═══ -->
+  <div class="page" id="page-news">
+    <div class="sec-title" style="margin-bottom:16px;">📰 News & Crisis Engine</div>
+    <div id="newsList"></div>
+    <button class="btn-sm" style="width:100%;margin-top:8px;padding:11px;" onclick="loadNewsAI()">🧠 AI Impact Analysis karo</button>
+    <div class="ai-panel" id="newsAiPanel" style="display:none;margin-top:12px;">
+      <div class="ai-panel-header"><span>🧠</span><span class="ai-panel-title" style="margin-left:8px;">News Impact Analysis</span></div>
+      <div id="newsAiOutput"></div>
+    </div>
+  </div>
+
+  <!-- ═══ ALERTS PAGE ═══ -->
+  <div class="page" id="page-alerts">
+    <div class="sec-title" style="margin-bottom:16px;">🔔 Smart Alerts</div>
+    <div id="alertsList"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bn-item active" onclick="navigate('home')" id="bn-home"><div class="bn-icon">🏠</div><div class="bn-lbl">Home</div></div>
+    <div class="bn-item" onclick="navigate('stocks')" id="bn-stocks"><div class="bn-icon">📊</div><div class="bn-lbl">Screener</div></div>
+    <div class="bn-item" onclick="navigate('portfolio')" id="bn-portfolio"><div class="bn-icon">💼</div><div class="bn-lbl">Portfolio</div></div>
+    <div class="bn-item" onclick="navigate('sectors')" id="bn-sectors"><div class="bn-icon">🗂️</div><div class="bn-lbl">Sectors</div></div>
+    <div class="bn-item" onclick="navigate('news')" id="bn-news"><div class="bn-icon">📰</div><div class="bn-lbl">News</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HYPERSONIC ANALYSIS PANEL ═══════════════════ -->
+<div class="hyper-panel" id="hyperPanel">
+  <div class="hyper-modal">
+    <div class="hyper-header">
+      <div>
+        <div class="hyper-stock-name" id="hyperStockName">Stock Analysis</div>
+        <div class="hyper-stock-meta" id="hyperStockMeta">BSE/NSE • 8-Module Institutional Analysis</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="run-all-btn" id="runAllBtn" onclick="runAllModules()">
+          ⚡ Run All 8 Modules
+        </button>
+        <button class="hyper-close" onclick="closeHyperPanel()">✕</button>
+      </div>
+    </div>
+    <!-- QUICK SUMMARY BAR — Auto loads on open -->
+    <div class="quick-bar" id="quickBar">
+      <div class="qb-item"><div class="qb-label">Decision</div><div class="qb-val" id="qbDec"><div class="spinner"></div></div><div class="qb-sub" id="qbDecSub">loading...</div></div>
+      <div class="qb-item"><div class="qb-label">📈 Profit</div><div class="qb-val pos" id="qbProfit">—</div><div class="qb-sub" id="qbProfitSub">potential</div></div>
+      <div class="qb-item"><div class="qb-label">📉 Risk</div><div class="qb-val neg" id="qbRisk">—</div><div class="qb-sub" id="qbRiskSub">downside</div></div>
+      <div class="qb-item"><div class="qb-label">⏳ Holding</div><div class="qb-val" id="qbHold" style="color:var(--yellow)">—</div><div class="qb-sub" id="qbHoldSub">period</div></div>
+      <div class="qb-item"><div class="qb-label">🎯 Entry Zone</div><div class="qb-val" id="qbEntry" style="color:var(--g2)">—</div><div class="qb-sub" id="qbEntrySub">buy range</div></div>
+    </div>
+
+    <!-- MODULE TABS -->
+    <div class="mod-tabs">
+      <button class="mod-tab active" onclick="switchModTab(0,this)">📊 Screener</button>
+      <button class="mod-tab" onclick="switchModTab(1,this)">💎 DCF Valuation</button>
+      <button class="mod-tab" onclick="switchModTab(2,this)">🛡️ Risk Analysis</button>
+      <button class="mod-tab" onclick="switchModTab(3,this)">📈 Earnings</button>
+      <button class="mod-tab" onclick="switchModTab(4,this)">🏛️ Portfolio</button>
+      <button class="mod-tab" onclick="switchModTab(5,this)">⚡ Technical</button>
+      <button class="mod-tab" onclick="switchModTab(6,this)">🎓 Dividend</button>
+      <button class="mod-tab" onclick="switchModTab(7,this)">🔬 Competitive</button>
+    </div>
+    <!-- MODULE CONTENTS -->
+    <div class="mod-content active" id="mod-0">
+      <button class="mod-run-btn" onclick="runModule(0)" id="runBtn0">📊 Goldman Sachs Screener Analysis Run karo</button>
+      <div id="modOut0"><div style="color:var(--text3);font-size:12px;">Button dabao to Goldman Sachs style screener analysis milegi — PE ratio, revenue growth, competitive moat, entry/exit zones, bull/bear targets.</div></div>
+    </div>
+    <div class="mod-content" id="mod-1">
+      <button class="mod-run-btn" onclick="runModule(1)" id="runBtn1">💎 Morgan Stanley DCF Valuation Run karo</button>
+      <div id="modOut1"><div style="color:var(--text3);font-size:12px;">5-year revenue projection, FCF calculation, WACC, Terminal Value (Exit Multiple + Perpetuity), sensitivity analysis table, intrinsic value vs market price.</div></div>
+    </div>
+    <div class="mod-content" id="mod-2">
+      <button class="mod-run-btn" onclick="runModule(2)" id="runBtn2">🛡️ Bridgewater Risk Analysis Run karo</button>
+      <div id="modOut2"><div style="color:var(--text3);font-size:12px;">Correlation, sector concentration, recession stress test, liquidity risk, tail risk scenarios, hedging strategies, rebalancing plan.</div></div>
+    </div>
+    <div class="mod-content" id="mod-3">
+      <button class="mod-run-btn" onclick="runModule(3)" id="runBtn3">📈 JPMorgan Earnings Analysis Run karo</button>
+      <div id="modOut3"><div style="color:var(--text3);font-size:12px;">Last 4 quarters earnings vs estimates, upcoming quarter expectations, key metrics, options implied move, historical reactions, bull/bear scenarios.</div></div>
+    </div>
+    <div class="mod-content" id="mod-4">
+      <button class="mod-run-btn" onclick="runModule(4)" id="runBtn4">🏛️ BlackRock Portfolio Builder Run karo</button>
+      <div id="modOut4"><div style="color:var(--text3);font-size:12px;">Asset allocation, ETF suggestions, core vs satellite positions, expected returns, max drawdown, tax efficiency, Investment Policy Statement.</div></div>
+    </div>
+    <div class="mod-content" id="mod-5">
+      <button class="mod-run-btn" onclick="runModule(5)" id="runBtn5">⚡ Citadel Technical Analysis Run karo</button>
+      <div id="modOut5"><div style="color:var(--text3);font-size:12px;">Trend analysis (daily/weekly/monthly), support/resistance, moving averages, RSI, MACD, Bollinger Bands, chart patterns, Fibonacci, trade setup.</div></div>
+    </div>
+    <div class="mod-content" id="mod-6">
+      <button class="mod-run-btn" onclick="runModule(6)" id="runBtn6">🎓 Harvard Dividend Strategy Run karo</button>
+      <div id="modOut6"><div style="color:var(--text3);font-size:12px;">Dividend yield, safety score, payout ratio, monthly income projection, DRIP 10-year projection, dividend growth estimate.</div></div>
+    </div>
+    <div class="mod-content" id="mod-7">
+      <button class="mod-run-btn" onclick="runModule(7)" id="runBtn7">🔬 Bain & Co Competitive Analysis Run karo</button>
+      <div id="modOut7"><div style="color:var(--text3);font-size:12px;">Top 5-7 competitors, market cap comparison, revenue+profit table, competitive moat, market share trends, management quality, SWOT, best pick.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SETTINGS MODAL ═══════════════════ -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Settings & Access Control</div>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">🔐 Password Change</div>
+      <div class="inp-grp"><label>Current Password</label><input type="password" id="oldPass" class="form-input" placeholder="Current password" /></div>
+      <div class="inp-grp"><label>New Password</label><input type="password" id="newPass" class="form-input" placeholder="Naya password (min 6)" /></div>
+      <div class="inp-grp"><label>Confirm New Password</label><input type="password" id="confirmPass" class="form-input" placeholder="Dobara likho" /></div>
+      <button class="btn-sm" onclick="changePassword()">Password Update karo</button>
+      <div id="passMsg" style="font-size:12px;margin-top:7px;"></div>
+    </div>
+    <div class="settings-section" id="adminSection" style="display:none;">
+      <div class="settings-section-title">🎫 Invite System (Admin Only)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div><div style="font-size:12px;font-weight:600;">Active Invite Code</div><div style="font-size:11px;color:var(--text3);">Ise share karo jise access dena ho</div></div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span class="code-badge" id="myInviteCode">----</span>
+          <button class="btn-sm" style="font-size:10px;padding:4px 9px;" onclick="copyCode()">📋</button>
+        </div>
+      </div>
+      <button class="btn-sm secondary" onclick="genNewCode()" style="font-size:11px;padding:5px 11px;">🔄 New Code Generate karo</button>
+      <div style="margin-top:14px;">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:7px;">Invited Members:</div>
+        <div id="inviteList"></div>
+        <div class="invite-add-row">
+          <input class="invite-add-input" id="newInviteUser" placeholder="Username manually add karo" />
+          <button class="btn-sm" onclick="addInviteUser()">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">⚡ App Settings</div>
+      <div class="settings-row"><div><div class="settings-row-lbl">Auto-refresh Market Data</div><div class="settings-row-sub">Har 10 sec update</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="settings-row"><div><div class="settings-row-lbl">Hinglish AI Output</div><div class="settings-row-sub">Hindi mein responses</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+      <div class="settings-row"><div><div class="settings-row-lbl">HyperSonic Mode</div><div class="settings-row-sub">All 8 modules simultaneously</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sm danger" onclick="doLogout()">🚪 Logout</button>
+      <button class="btn-sm secondary" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DB HELPER
+// ═══════════════════════════════════════════════════
+const DB = {
+  get: k => { try { return JSON.parse(localStorage.getItem('ashi_'+k)); } catch { return null; } },
+  set: (k,v) => localStorage.setItem('ashi_'+k, JSON.stringify(v))
+};
+function rndStr() { return Math.random().toString(36).substr(2,4).toUpperCase() + Math.random().toString(36).substr(2,2).toUpperCase(); }
+
+function initApp() {
+  if (!DB.get('users')) {
+    DB.set('users', [
+      {username:'admin',password:'admin123',role:'admin',name:'Admin'},
+      {username:'vicky',password:'vicky123',role:'user',name:'Vicky'}
+    ]);
+  }
+  if (!DB.get('inviteCodes')) DB.set('inviteCodes', ['ASAM-'+rndStr()]);
+  if (!DB.get('invitedUsers')) DB.set('invitedUsers', ['vicky']);
+  if (!DB.get('portfolio')) DB.set('portfolio', []);
+}
+initApp();
+
+// ═══════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════
+let currentUser = DB.get('session');
+function switchTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabInvite').classList.toggle('active', tab==='invite');
+  document.getElementById('loginForm').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('inviteForm').style.display = tab==='invite' ? 'block' : 'none';
+}
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  const user = (DB.get('users')||[]).find(x => x.username===u && x.password===p);
+  if (!user) { document.getElementById('loginErr').style.display='block'; return; }
+  DB.set('session', user); currentUser = user;
+  document.getElementById('authOverlay').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  setupUI(); loadAllData();
+}
+function doSignup() {
+  const code = document.getElementById('invCode').value.trim().toUpperCase();
+  const name = document.getElementById('invName').value.trim();
+  const pass = document.getElementById('invPass').value;
+  const codes = DB.get('inviteCodes') || [];
+  const err = document.getElementById('inviteErr');
+  const ok = document.getElementById('inviteOk');
+  err.style.display='none'; ok.style.display='none';
+  if (!codes.includes(code)) { err.textContent='❌ Invalid invite code'; err.style.display='block'; return; }
+  if (!name || pass.length<6) { err.textContent='❌ Naam aur 6+ char password chahiye'; err.style.display='block'; return; }
+  const uname = name.toLowerCase().replace(/\s+/g,'_');
+  const users = DB.get('users') || [];
+  if (users.find(x=>x.username===uname)) { err.textContent='❌ Username already exists'; err.style.display='block'; return; }
+  users.push({username:uname,password:pass,role:'user',name});
+  DB.set('users', users);
+  const inv = DB.get('invitedUsers') || [];
+  if (!inv.includes(uname)) inv.push(uname);
+  DB.set('invitedUsers', inv);
+  ok.textContent='✅ Account ban gaya! Ab login karo.'; ok.style.display='block';
+  setTimeout(()=>switchTab('login'), 2000);
+}
+function doLogout() { DB.set('session',null); location.reload(); }
+if (currentUser) {
+  document.getElementById('authOverlay').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  setupUI(); loadAllData();
+}
+
+// ═══════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link,.bn-item').forEach(l=>l.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const nl=document.getElementById('nl-'+page); if(nl) nl.classList.add('active');
+  const bn=document.getElementById('bn-'+page); if(bn) bn.classList.add('active');
+  if(page==='sectors') renderSectors();
+  if(page==='news') renderNews();
+  if(page==='alerts') renderAlerts();
+  if(page==='stocks') renderFullScreener();
+  if(page==='portfolio') renderPortfolio();
+}
+function setupUI() {
+  if (!currentUser) return;
+  document.getElementById('navName').textContent = currentUser.name || currentUser.username;
+  document.getElementById('navAvatar').textContent = (currentUser.name||'U')[0].toUpperCase();
+  if (currentUser.role==='admin') document.getElementById('adminSection').style.display='block';
+}
+
+// ═══════════════════════════════════════════════════
+//  STOCK DATA — BSE/NSE (100+ Companies)
+// ═══════════════════════════════════════════════════
+const STOCKS = [
+  // LARGE CAP IT
+  {n:'TCS',s:'TCS',sec:'IT',price:3920,chg:0.8,ret1y:22,dec:'BUY',profit:'10-18',hold:'90 din',conf:78,cap:'large'},
+  {n:'Infosys',s:'INFY',sec:'IT',price:1623,chg:1.5,ret1y:15,dec:'BUY',profit:'11-19',hold:'75 din',conf:74,cap:'large'},
+  {n:'HCL Technologies',s:'HCLTECH',sec:'IT',price:1892,chg:0.4,ret1y:19,dec:'HOLD',profit:'8-15',hold:'60 din',conf:66,cap:'large'},
+  {n:'Wipro',s:'WIPRO',sec:'IT',price:487,chg:-1.1,ret1y:5,dec:'HOLD',profit:'6-12',hold:'30 din',conf:58,cap:'large'},
+  {n:'Tech Mahindra',s:'TECHM',sec:'IT',price:1485,chg:1.2,ret1y:18,dec:'BUY',profit:'12-20',hold:'60 din',conf:70,cap:'large'},
+  {n:'LTIMindtree',s:'LTIM',sec:'IT',price:5620,chg:0.9,ret1y:24,dec:'BUY',profit:'13-22',hold:'90 din',conf:72,cap:'large'},
+  {n:'Mphasis',s:'MPHASIS',sec:'IT',price:2890,chg:-0.5,ret1y:8,dec:'HOLD',profit:'7-13',hold:'45 din',conf:62,cap:'mid'},
+  {n:'Persistent Systems',s:'PERSISTENT',sec:'IT',price:5240,chg:2.1,ret1y:42,dec:'BUY',profit:'18-28',hold:'120 din',conf:79,cap:'mid'},
+  // BANKING
+  {n:'HDFC Bank',s:'HDFCBANK',sec:'Banking',price:1748,chg:-0.4,ret1y:8,dec:'HOLD',profit:'8-14',hold:'45 din',conf:65,cap:'large'},
+  {n:'ICICI Bank',s:'ICICIBANK',sec:'Banking',price:1241,chg:0.9,ret1y:28,dec:'BUY',profit:'14-24',hold:'60 din',conf:80,cap:'large'},
+  {n:'SBI',s:'SBIN',sec:'Banking',price:812,chg:2.1,ret1y:34,dec:'BUY',profit:'16-28',hold:'90 din',conf:76,cap:'large'},
+  {n:'Kotak Mahindra Bank',s:'KOTAKBANK',sec:'Banking',price:1892,chg:0.6,ret1y:12,dec:'HOLD',profit:'9-16',hold:'60 din',conf:67,cap:'large'},
+  {n:'Axis Bank',s:'AXISBANK',sec:'Banking',price:1156,chg:1.3,ret1y:22,dec:'BUY',profit:'13-22',hold:'75 din',conf:73,cap:'large'},
+  {n:'Bank of Baroda',s:'BANKBARODA',sec:'Banking',price:256,chg:1.8,ret1y:31,dec:'BUY',profit:'15-25',hold:'90 din',conf:68,cap:'large'},
+  {n:'Punjab National Bank',s:'PNB',sec:'Banking',price:118,chg:2.4,ret1y:38,dec:'BUY',profit:'18-30',hold:'90 din',conf:65,cap:'large'},
+  {n:'IndusInd Bank',s:'INDUSINDBK',sec:'Banking',price:1340,chg:-1.2,ret1y:-8,dec:'HOLD',profit:'5-12',hold:'30 din',conf:52,cap:'large'},
+  // ENERGY
+  {n:'Reliance Industries',s:'RELIANCE',sec:'Energy',price:2847,chg:1.2,ret1y:18,dec:'BUY',profit:'12-22',hold:'60 din',conf:82,cap:'large'},
+  {n:'ONGC',s:'ONGC',sec:'Energy',price:278,chg:1.1,ret1y:38,dec:'BUY',profit:'16-26',hold:'75 din',conf:70,cap:'large'},
+  {n:'IOC',s:'IOC',sec:'Energy',price:172,chg:0.8,ret1y:28,dec:'BUY',profit:'14-22',hold:'60 din',conf:67,cap:'large'},
+  {n:'BPCL',s:'BPCL',sec:'Energy',price:634,chg:1.4,ret1y:32,dec:'BUY',profit:'14-24',hold:'75 din',conf:69,cap:'large'},
+  {n:'Tata Power',s:'TATAPOWER',sec:'Energy',price:432,chg:3.4,ret1y:45,dec:'BUY',profit:'18-32',hold:'120 din',conf:71,cap:'mid'},
+  // PHARMA
+  {n:'Sun Pharma',s:'SUNPHARMA',sec:'Pharma',price:1745,chg:1.8,ret1y:31,dec:'BUY',profit:'14-24',hold:'90 din',conf:77,cap:'large'},
+  {n:'Cipla',s:'CIPLA',sec:'Pharma',price:1542,chg:0.7,ret1y:24,dec:'BUY',profit:'13-22',hold:'60 din',conf:72,cap:'large'},
+  {n:'Dr Reddys',s:'DRREDDY',sec:'Pharma',price:6840,chg:0.5,ret1y:18,dec:'HOLD',profit:'9-16',hold:'60 din',conf:66,cap:'large'},
+  {n:'Divi Lab',s:'DIVISLAB',sec:'Pharma',price:5240,chg:-0.3,ret1y:12,dec:'HOLD',profit:'8-14',hold:'45 din',conf:62,cap:'large'},
+  {n:'Aurobindo Pharma',s:'AUROPHARMA',sec:'Pharma',price:1245,chg:2.1,ret1y:42,dec:'BUY',profit:'18-28',hold:'90 din',conf:74,cap:'mid'},
+  {n:'Lupin',s:'LUPIN',sec:'Pharma',price:2140,chg:1.3,ret1y:35,dec:'BUY',profit:'14-24',hold:'75 din',conf:70,cap:'large'},
+  // AUTO
+  {n:'Maruti Suzuki',s:'MARUTI',sec:'Auto',price:12340,chg:-0.3,ret1y:12,dec:'HOLD',profit:'9-16',hold:'60 din',conf:61,cap:'large'},
+  {n:'Tata Motors',s:'TATAMOTORS',sec:'Auto',price:940,chg:1.9,ret1y:42,dec:'BUY',profit:'15-25',hold:'75 din',conf:73,cap:'large'},
+  {n:'M&M',s:'M&M',sec:'Auto',price:2890,chg:1.4,ret1y:55,dec:'BUY',profit:'18-30',hold:'90 din',conf:80,cap:'large'},
+  {n:'Hero MotoCorp',s:'HEROMOTOCO',sec:'Auto',price:4920,chg:0.6,ret1y:20,dec:'HOLD',profit:'10-18',hold:'60 din',conf:64,cap:'large'},
+  {n:'Bajaj Auto',s:'BAJAJ-AUTO',sec:'Auto',price:9840,chg:0.8,ret1y:35,dec:'BUY',profit:'13-22',hold:'75 din',conf:72,cap:'large'},
+  {n:'Eicher Motors',s:'EICHERMOT',sec:'Auto',price:4680,chg:0.9,ret1y:28,dec:'BUY',profit:'12-20',hold:'75 din',conf:70,cap:'large'},
+  // INFRASTRUCTURE
+  {n:'L&T',s:'LT',sec:'Infrastructure',price:3567,chg:0.5,ret1y:30,dec:'BUY',profit:'13-21',hold:'90 din',conf:74,cap:'large'},
+  {n:'Adani Ports',s:'ADANIPORTS',sec:'Infrastructure',price:1380,chg:0.6,ret1y:22,dec:'HOLD',profit:'10-18',hold:'45 din',conf:62,cap:'large'},
+  {n:'IRB Infrastructure',s:'IRB',sec:'Infrastructure',price:74,chg:2.8,ret1y:48,dec:'BUY',profit:'20-35',hold:'120 din',conf:68,cap:'mid'},
+  {n:'KNR Constructions',s:'KNRCON',sec:'Infrastructure',price:342,chg:1.5,ret1y:32,dec:'BUY',profit:'15-25',hold:'90 din',conf:67,cap:'mid'},
+  // POWER
+  {n:'Power Grid',s:'POWERGRID',sec:'Power',price:312,chg:1.4,ret1y:28,dec:'BUY',profit:'12-20',hold:'120 din',conf:71,cap:'large'},
+  {n:'NTPC',s:'NTPC',sec:'Power',price:374,chg:0.8,ret1y:36,dec:'BUY',profit:'14-22',hold:'90 din',conf:69,cap:'large'},
+  {n:'Adani Green',s:'ADANIGREEN',sec:'Power',price:1890,chg:2.3,ret1y:18,dec:'HOLD',profit:'10-20',hold:'60 din',conf:60,cap:'large'},
+  {n:'JSW Energy',s:'JSWENERGY',sec:'Power',price:678,chg:1.6,ret1y:42,dec:'BUY',profit:'16-28',hold:'90 din',conf:70,cap:'mid'},
+  {n:'Torrent Power',s:'TORNTPOWER',sec:'Power',price:1642,chg:0.9,ret1y:38,dec:'BUY',profit:'14-24',hold:'90 din',conf:72,cap:'mid'},
+  // FINANCIAL
+  {n:'Bajaj Finance',s:'BAJFINANCE',sec:'Financial',price:7124,chg:2.3,ret1y:26,dec:'BUY',profit:'15-26',hold:'90 din',conf:75,cap:'large'},
+  {n:'Bajaj Finserv',s:'BAJAJFINSV',sec:'Financial',price:1892,chg:1.2,ret1y:18,dec:'HOLD',profit:'10-18',hold:'60 din',conf:65,cap:'large'},
+  {n:'Muthoot Finance',s:'MUTHOOTFIN',sec:'Financial',price:1842,chg:1.8,ret1y:32,dec:'BUY',profit:'14-24',hold:'75 din',conf:69,cap:'mid'},
+  {n:'SBI Life Insurance',s:'SBILIFE',sec:'Financial',price:1640,chg:0.7,ret1y:20,dec:'HOLD',profit:'9-16',hold:'60 din',conf:63,cap:'large'},
+  {n:'HDFC Life',s:'HDFCLIFE',sec:'Financial',price:742,chg:0.4,ret1y:14,dec:'HOLD',profit:'8-14',hold:'45 din',conf:60,cap:'large'},
+  // FMCG
+  {n:'Asian Paints',s:'ASIANPAINT',sec:'FMCG',price:2821,chg:-0.6,ret1y:3,dec:'HOLD',profit:'5-10',hold:'45 din',conf:55,cap:'large'},
+  {n:'HUL',s:'HINDUNILVR',sec:'FMCG',price:2640,chg:-0.2,ret1y:2,dec:'HOLD',profit:'4-8',hold:'30 din',conf:52,cap:'large'},
+  {n:'ITC',s:'ITC',sec:'FMCG',price:485,chg:0.6,ret1y:12,dec:'BUY',profit:'10-18',hold:'90 din',conf:68,cap:'large'},
+  {n:'Nestle India',s:'NESTLEIND',sec:'FMCG',price:2478,chg:0.3,ret1y:6,dec:'HOLD',profit:'5-10',hold:'45 din',conf:57,cap:'large'},
+  {n:'Britannia',s:'BRITANNIA',sec:'FMCG',price:5240,chg:-0.4,ret1y:8,dec:'HOLD',profit:'6-12',hold:'45 din',conf:58,cap:'large'},
+  // METALS
+  {n:'JSW Steel',s:'JSWSTEEL',sec:'Metals',price:920,chg:2.1,ret1y:18,dec:'BUY',profit:'14-24',hold:'60 din',conf:68,cap:'large'},
+  {n:'Tata Steel',s:'TATASTEEL',sec:'Metals',price:168,chg:1.8,ret1y:22,dec:'BUY',profit:'15-25',hold:'75 din',conf:67,cap:'large'},
+  {n:'SAIL',s:'SAIL',sec:'Metals',price:142,chg:2.4,ret1y:28,dec:'BUY',profit:'16-26',hold:'75 din',conf:65,cap:'large'},
+  {n:'Hindalco',s:'HINDALCO',sec:'Metals',price:645,chg:1.2,ret1y:24,dec:'BUY',profit:'13-22',hold:'75 din',conf:69,cap:'large'},
+  {n:'Vedanta',s:'VEDL',sec:'Metals',price:478,chg:2.8,ret1y:42,dec:'BUY',profit:'18-30',hold:'75 din',conf:66,cap:'large'},
+  // TELECOM
+  {n:'Bharti Airtel',s:'BHARTIARTL',sec:'Telecom',price:1840,chg:0.8,ret1y:42,dec:'BUY',profit:'18-28',hold:'120 din',conf:79,cap:'large'},
+  {n:'Vodafone Idea',s:'IDEA',sec:'Telecom',price:14,chg:-2.1,ret1y:-28,dec:'SELL',profit:'-5 to +3',hold:'—',conf:35,cap:'mid'},
+  {n:'BSNL (IPO soon)',s:'BSNL',sec:'Telecom',price:0,chg:0,ret1y:0,dec:'HOLD',profit:'Watch',hold:'Wait',conf:40,cap:'large'},
+  // NEW-AGE / TECH
+  {n:'Zomato',s:'ZOMATO',sec:'Internet',price:245,chg:3.2,ret1y:95,dec:'BUY',profit:'20-35',hold:'120 din',conf:72,cap:'large'},
+  {n:'Paytm',s:'PAYTM',sec:'Fintech',price:648,chg:-1.4,ret1y:-18,dec:'HOLD',profit:'5-15',hold:'60 din',conf:48,cap:'mid'},
+  {n:'Nykaa',s:'NYKAA',sec:'Internet',price:192,chg:2.1,ret1y:28,dec:'HOLD',profit:'8-18',hold:'60 din',conf:55,cap:'mid'},
+  {n:'Policybazaar',s:'POLICYBZR',sec:'Fintech',price:1842,chg:1.8,ret1y:42,dec:'BUY',profit:'18-28',hold:'90 din',conf:65,cap:'mid'},
+  {n:'Delhivery',s:'DELHIVERY',sec:'Logistics',price:392,chg:1.2,ret1y:18,dec:'HOLD',profit:'8-16',hold:'60 din',conf:58,cap:'mid'},
+  // PSU / DEFENCE
+  {n:'HAL',s:'HAL',sec:'Defence',price:4240,chg:2.8,ret1y:88,dec:'BUY',profit:'22-35',hold:'180 din',conf:78,cap:'large'},
+  {n:'BEL',s:'BEL',sec:'Defence',price:312,chg:2.1,ret1y:65,dec:'BUY',profit:'20-32',hold:'180 din',conf:74,cap:'large'},
+  {n:'IRFC',s:'IRFC',sec:'PSU',price:188,chg:1.8,ret1y:52,dec:'BUY',profit:'18-30',hold:'120 din',conf:73,cap:'large'},
+  {n:'Coal India',s:'COALINDIA',sec:'PSU',price:486,chg:1.4,ret1y:38,dec:'BUY',profit:'15-24',hold:'90 din',conf:70,cap:'large'},
+  {n:'NHPC',s:'NHPC',sec:'PSU',price:98,chg:1.2,ret1y:32,dec:'BUY',profit:'14-22',hold:'90 din',conf:67,cap:'large'},
+  {n:'RVNL',s:'RVNL',sec:'PSU',price:425,chg:3.1,ret1y:125,dec:'BUY',profit:'25-40',hold:'180 din',conf:71,cap:'mid'},
+  // REAL ESTATE
+  {n:'DLF',s:'DLF',sec:'Real Estate',price:892,chg:1.6,ret1y:48,dec:'BUY',profit:'18-30',hold:'120 din',conf:72,cap:'large'},
+  {n:'Godrej Properties',s:'GODREJPROP',sec:'Real Estate',price:2840,chg:1.2,ret1y:38,dec:'BUY',profit:'16-26',hold:'90 din',conf:70,cap:'large'},
+  {n:'Oberoi Realty',s:'OBEROIRLTY',sec:'Real Estate',price:1942,chg:0.8,ret1y:32,dec:'BUY',profit:'14-24',hold:'90 din',conf:68,cap:'mid'},
+  // CHEMICALS
+  {n:'SRF',s:'SRF',sec:'Chemical',price:2640,chg:0.7,ret1y:14,dec:'HOLD',profit:'8-16',hold:'60 din',conf:61,cap:'mid'},
+  {n:'PI Industries',s:'PIIND',sec:'Chemical',price:3840,chg:0.9,ret1y:18,dec:'HOLD',profit:'10-18',hold:'60 din',conf:63,cap:'mid'},
+  {n:'Navin Fluorine',s:'NAVINFLUOR',sec:'Chemical',price:3240,chg:1.1,ret1y:22,dec:'BUY',profit:'12-20',hold:'75 din',conf:67,cap:'mid'},
+  // HEALTHCARE / HOSPITALS
+  {n:'Apollo Hospitals',s:'APOLLOHOSP',sec:'Healthcare',price:6840,chg:1.4,ret1y:38,dec:'BUY',profit:'16-26',hold:'90 din',conf:75,cap:'large'},
+  {n:'Fortis Healthcare',s:'FORTIS',sec:'Healthcare',price:642,chg:1.8,ret1y:42,dec:'BUY',profit:'18-28',hold:'90 din',conf:72,cap:'mid'},
+  {n:'Max Healthcare',s:'MAXHEALTH',sec:'Healthcare',price:978,chg:2.2,ret1y:52,dec:'BUY',profit:'20-30',hold:'120 din',conf:74,cap:'mid'},
+  // CEMENT
+  {n:'UltraTech Cement',s:'ULTRACEMCO',sec:'Cement',price:10840,chg:0.6,ret1y:20,dec:'HOLD',profit:'9-16',hold:'60 din',conf:63,cap:'large'},
+  {n:'Shree Cement',s:'SHREECEM',sec:'Cement',price:26840,chg:0.4,ret1y:14,dec:'HOLD',profit:'7-13',hold:'45 din',conf:60,cap:'large'},
+  {n:'ACC',s:'ACC',sec:'Cement',price:2140,chg:0.8,ret1y:18,dec:'HOLD',profit:'8-15',hold:'60 din',conf:61,cap:'large'},
+  // CONSUMER
+  {n:'Titan Company',s:'TITAN',sec:'Consumer',price:3840,chg:1.1,ret1y:22,dec:'BUY',profit:'12-20',hold:'90 din',conf:72,cap:'large'},
+  {n:'Trent',s:'TRENT',sec:'Consumer',price:5640,chg:2.4,ret1y:125,dec:'BUY',profit:'25-40',hold:'180 din',conf:76,cap:'mid'},
+  {n:'Avenue Supermarts',s:'DMART',sec:'Consumer',price:5240,chg:0.6,ret1y:8,dec:'HOLD',profit:'6-12',hold:'45 din',conf:58,cap:'large'},
+  {n:'Info Edge India',s:'NAUKRI',sec:'Internet',price:7240,chg:1.4,ret1y:28,dec:'BUY',profit:'14-22',hold:'90 din',conf:71,cap:'mid'},
+  // AGRICULTURE
+  {n:'UPL',s:'UPL',sec:'Agriculture',price:548,chg:-0.8,ret1y:-12,dec:'HOLD',profit:'4-10',hold:'30 din',conf:48,cap:'large'},
+  {n:'Coromandel Intl',s:'COROMANDEL',sec:'Agriculture',price:1240,chg:1.2,ret1y:24,dec:'BUY',profit:'12-20',hold:'75 din',conf:67,cap:'mid'},
+];
+let filteredStocks = [...STOCKS];
+
+// ═══════════════════════════════════════════════════
+//  SCREENER RENDER
+// ═══════════════════════════════════════════════════
+function renderHomeScreener() {
+  const tbody = document.getElementById('screenerBody');
+  tbody.innerHTML = filteredStocks.slice(0,10).map(s => `
+    <tr onclick="openHyperPanel('${s.s}','${s.n}','${s.sec}',${s.price})">
+      <td><div class="stock-name">${s.n}</div><div class="stock-sym">${s.s} • ${s.sec}</div></td>
+      <td class="mkt-val">₹${s.price.toLocaleString()}</td>
+      <td class="${s.chg>=0?'pos':'neg'}" style="font-family:var(--mono)">${s.chg>=0?'+':''}${s.chg}%</td>
+      <td><span class="badge badge-${s.dec.toLowerCase()}">${s.dec}</span></td>
+      <td class="pos" style="font-family:var(--mono)">+${s.profit}%</td>
+      <td style="font-size:11px;color:var(--text2)">${s.hold}</td>
+      <td><div style="display:flex;align-items:center;gap:5px;"><div class="conf-bar"><div class="conf-fill" style="width:${s.conf}%"></div></div><span style="font-size:10px;font-family:var(--mono)">${s.conf}%</span></div></td>
+      <td><button class="btn-sm" style="font-size:10px;padding:3px 9px;" onclick="event.stopPropagation();openHyperPanel('${s.s}','${s.n}','${s.sec}',${s.price})">⚡ Analyze</button></td>
+    </tr>
+  `).join('');
+}
+function renderFullScreener() {
+  const tbody = document.getElementById('fullScreenerBody');
+  tbody.innerHTML = filteredStocks.map((s,i) => `
+    <tr onclick="openHyperPanel('${s.s}','${s.n}','${s.sec}',${s.price})">
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td><div class="stock-name">${s.n}</div><div class="stock-sym">${s.s}</div></td>
+      <td style="color:var(--text2);font-size:11px">${s.sec}</td>
+      <td class="mkt-val">₹${s.price.toLocaleString()}</td>
+      <td class="${s.ret1y>0?'pos':'neg'}" style="font-family:var(--mono)">${s.ret1y>0?'+':''}${s.ret1y}%</td>
+      <td><span class="badge badge-${s.dec.toLowerCase()}">${s.dec}</span></td>
+      <td class="pos" style="font-family:var(--mono)">+${s.profit}%</td>
+      <td style="font-size:11px;color:var(--text2)">${s.hold}</td>
+      <td><div style="display:flex;align-items:center;gap:5px;"><div class="conf-bar"><div class="conf-fill" style="width:${s.conf}%"></div></div><span style="font-size:10px;font-family:var(--mono)">${s.conf}%</span></div></td>
+      <td><button class="btn-sm" style="font-size:10px;padding:3px 9px;" onclick="event.stopPropagation();openHyperPanel('${s.s}','${s.n}','${s.sec}',${s.price})">⚡ AI</button></td>
+    </tr>
+  `).join('');
+}
+function filterStocks(type, btn) {
+  document.querySelectorAll('.screener-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(type==='all') filteredStocks=[...STOCKS];
+  else if(['buy','hold','sell'].includes(type)) filteredStocks=STOCKS.filter(s=>s.dec===type.toUpperCase());
+  else if(type==='large') filteredStocks=STOCKS.filter(s=>s.cap==='large');
+  else if(type==='mid') filteredStocks=STOCKS.filter(s=>s.cap==='mid');
+  else if(type==='small') filteredStocks=STOCKS.filter(s=>s.cap==='small');
+  else filteredStocks=STOCKS.filter(s=>s.sec.toLowerCase().includes(type.toLowerCase()));
+  renderHomeScreener(); renderFullScreener();
+}
+function screenerFilter(q) {
+  if(!q) { filteredStocks=[...STOCKS]; renderFullScreener(); return; }
+  filteredStocks=STOCKS.filter(s=>s.n.toLowerCase().includes(q.toLowerCase())||s.s.toLowerCase().includes(q.toLowerCase())||s.sec.toLowerCase().includes(q.toLowerCase()));
+  renderFullScreener();
+}
+
+// ═══════════════════════════════════════════════════
+//  AI-POWERED UNIVERSAL BSE/NSE SEARCH
+//  Works for ALL 5000+ listed companies + new IPOs
+// ═══════════════════════════════════════════════════
+const aiSearchCache = {};
+let searchDebounce = null;
+
+async function searchStocks(query) {
+  const res = document.getElementById('searchResults');
+  if(!query || query.length < 2) { res.classList.remove('open'); return; }
+
+  const q = query.toLowerCase();
+
+  // Step 1: Show local matches instantly
+  const localMatches = STOCKS.filter(s=>
+    s.n.toLowerCase().includes(q) ||
+    s.s.toLowerCase().includes(q) ||
+    s.sec.toLowerCase().includes(q)
+  ).slice(0, 5);
+
+  // Show loading + local results immediately
+  res.innerHTML = `
+    <div class="sr-item" style="background:rgba(0,255,163,0.04);border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="spinner"></div>
+        <div><div class="sr-name" style="color:var(--g1);">🔍 AI BSE/NSE search: "${query}"</div>
+        <div class="sr-sym">5000+ companies search ho rahi hai...</div></div>
+      </div>
+    </div>
+    ${localMatches.map(s=>`
+      <div class="sr-item" onclick="closeSearchAndOpen('${s.s}','${s.n}','${s.sec}',${s.price})">
+        <div><div class="sr-name">${s.n}</div><div class="sr-sym">${s.s} • ${s.sec}</div></div>
+        <span class="badge badge-${s.dec.toLowerCase()}">${s.dec}</span>
+      </div>`).join('')}
+  `;
+  res.classList.add('open');
+
+  // Step 2: Debounce AI search (500ms)
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(async () => {
+    // Check cache
+    const cacheKey = q.trim();
+    if(aiSearchCache[cacheKey]) {
+      renderAISearchResults(query, aiSearchCache[cacheKey], localMatches, res);
+      return;
+    }
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 500,
+          system: `You are a BSE/NSE stock database. When given a search query, return a JSON array of matching Indian listed companies. Return ONLY valid JSON, no markdown, no explanation.
+
+Format: [{"name":"Company Name","symbol":"NSESYMBOL","sector":"Sector","price":1234,"dec":"BUY","cap":"large/mid/small","listed":"BSE/NSE/Both"}]
+
+Rules:
+- Return 4-6 best matching companies
+- Include companies matching by name, symbol, sector, or product
+- Include recently listed IPOs if relevant
+- Price should be approximate current estimate in ₹
+- dec: BUY/HOLD/SELL based on current fundamentals
+- If query is a sector (e.g. "defence"), return top companies in that sector
+- If query is a new/unknown company, still try your best
+- Return [] if truly no matches exist`,
+          messages: [{role:'user', content:`Search query: "${query}"\nFind matching BSE/NSE listed companies.`}]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.map(c=>c.text||'').join('') || '[]';
+      const clean = text.replace(/```json|```/g,'').trim();
+      const results = JSON.parse(clean);
+      aiSearchCache[cacheKey] = results;
+      renderAISearchResults(query, results, localMatches, res);
+    } catch(e) {
+      // On error, just show local + manual option
+      renderAISearchResults(query, [], localMatches, res);
+    }
+  }, 500);
+}
+
+function renderAISearchResults(query, aiResults, localMatches, res) {
+  // Merge AI results with local, deduplicate by symbol
+  const localSyms = new Set(localMatches.map(s=>s.s));
+  const newAI = aiResults.filter(r => r.symbol && !localSyms.has(r.symbol));
+
+  const allResults = [
+    ...localMatches.map(s => ({
+      name: s.n, symbol: s.s, sector: s.sec,
+      price: s.price, dec: s.dec, source: 'local'
+    })),
+    ...newAI.map(r => ({
+      name: r.name, symbol: r.symbol, sector: r.sector,
+      price: r.price||0, dec: r.dec||'HOLD', source: 'ai', listed: r.listed||'NSE'
+    }))
+  ].slice(0, 8);
+
+  if(!allResults.length) {
+    res.innerHTML = `
+      <div class="sr-item" style="background:rgba(0,255,163,0.04);" onclick="openHyperPanelByName('${query}');document.getElementById('searchResults').classList.remove('open');">
+        <div><div class="sr-name" style="color:var(--g1);">⚡ "${query}" — Direct AI Full Analysis</div>
+        <div class="sr-sym">8-module institutional analysis start karo</div></div>
+        <span class="badge badge-buy">Analyze</span>
+      </div>
+      <div class="sr-item"><div class="sr-name" style="color:var(--text3);font-size:12px;">No exact match — try full name ya NSE symbol</div></div>`;
+    res.classList.add('open');
+    return;
+  }
+
+  res.innerHTML = allResults.map(s => `
+    <div class="sr-item" onclick="closeSearchAndOpen('${s.symbol}','${s.name}','${s.sector}',${s.price||0})">
+      <div>
+        <div class="sr-name">${s.name} ${s.source==='ai' ? '<span style="font-size:9px;background:rgba(0,212,255,0.15);color:var(--g2);padding:1px 5px;border-radius:3px;margin-left:4px;">AI</span>' : ''}</div>
+        <div class="sr-sym">${s.symbol} • ${s.sector} ${s.listed ? '• '+s.listed : ''}</div>
+      </div>
+      <span class="badge badge-${(s.dec||'hold').toLowerCase()}">${s.dec||'HOLD'}</span>
+    </div>`).join('') +
+    `<div class="sr-item" style="background:rgba(0,255,163,0.03);border-top:1px solid var(--border);" onclick="openHyperPanelByName('${query}');document.getElementById('searchResults').classList.remove('open');">
+      <div><div class="sr-name" style="color:var(--g1);font-size:12px;">🔍 "${query}" — Koi aur company? Direct AI Analysis</div></div>
+      <span class="badge badge-buy">⚡</span>
+    </div>`;
+  res.classList.add('open');
+}
+
+function closeSearchAndOpen(sym, name, sec, price) {
+  document.querySelectorAll('.search-results').forEach(r=>r.classList.remove('open'));
+  document.getElementById('homeSearch').value = '';
+  const screenerSearch = document.getElementById('screenerSearch');
+  if(screenerSearch) screenerSearch.value = '';
+  openHyperPanel(sym, name, sec, price);
+  // Also try to fetch live price to update the panel
+  fetchLivePrice(sym, name);
+}
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.search-wrap')) document.querySelectorAll('.search-results').forEach(r=>r.classList.remove('open'));
+});
+
+// ═══════════════════════════════════════════════════
+//  HYPERSONIC PANEL
+// ═══════════════════════════════════════════════════
+let currentHyperStock = {};
+function openHyperPanel(sym, name, sec, price) {
+  currentHyperStock = {sym, name, sec, price};
+  document.getElementById('hyperStockName').textContent = `⚡ ${name} (${sym})`;
+  document.getElementById('hyperStockMeta').textContent = `${sec} • ₹${price.toLocaleString()} • BSE/NSE • 8-Module Institutional Analysis`;
+  resetModules();
+  document.getElementById('hyperPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function openHyperPanelCustom(query) {
+  currentHyperStock = {sym: query.toUpperCase(), name: query, sec: 'Indian Market', price: 0};
+  document.getElementById('hyperStockName').textContent = `⚡ ${query} — Full Analysis`;
+  document.getElementById('hyperStockMeta').textContent = `BSE/NSE • Live price fetch ho rahi hai... • 8-Module Analysis`;
+  resetModules();
+  document.getElementById('hyperPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  fetchLivePrice(query.toUpperCase(), query);
+}
+
+// ═══════════════════════════════════════════════════
+//  LIVE PRICE ENGINE
+//  Source 1: Groww API (Indian, most reliable)
+//  Source 2: NSE India API
+//  Source 3: Yahoo Finance
+//  All via CORS proxy fallbacks
+// ═══════════════════════════════════════════════════
+
+const CORS_PROXIES = [
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+];
+
+async function proxyFetch(url, timeout = 6000) {
+  for (const makeUrl of CORS_PROXIES) {
+    try {
+      const r = await fetch(makeUrl(url), { signal: AbortSignal.timeout(timeout) });
+      if (!r.ok) continue;
+      const text = await r.text();
+      const str = text.startsWith('{"contents"') ? JSON.parse(text).contents : text;
+      return JSON.parse(str);
+    } catch(e) { /* try next */ }
+  }
+  return null;
+}
+
+function showLiveBadge(exchange, price, chg, extra = '') {
+  const color = chg >= 0 ? 'var(--g1)' : 'var(--red)';
+  const priceStr = price.toLocaleString('en-IN', {maximumFractionDigits: 2});
+  const badge = exchange === 'GROWW' ? '🟢 GROWW' : exchange === 'NSE' ? '🔵 NSE' : '🟡 '+exchange;
+  document.getElementById('hyperStockMeta').innerHTML =
+    `<b style="color:var(--g2)">${badge} LIVE</b> &nbsp;•&nbsp;
+     <b style="color:${color}">₹${priceStr} (${chg>=0?'+':''}${chg}%)</b>
+     ${extra ? '&nbsp;•&nbsp;' + extra : ''}`;
+}
+
+// ── SOURCE 1: GROWW ──────────────────────────────
+async function fetchFromGroww(sym) {
+  // Groww search to get growwContractId
+  const searchData = await proxyFetch(
+    `https://groww.in/v1/api/stocks/search?query=${encodeURIComponent(sym)}&size=5`
+  );
+  if (!searchData) return null;
+
+  const results = searchData?.data?.content || searchData?.content || [];
+  const match = results.find(r =>
+    r.nseScripCode === sym || r.bseScripCode === sym ||
+    r.searchId?.toUpperCase() === sym ||
+    r.legalName?.toUpperCase().includes(sym)
+  ) || results[0];
+
+  if (!match) return null;
+
+  const searchId = match.searchId || match.nseScripCode || match.bseScripCode;
+  if (!searchId) return null;
+
+  // Groww quote endpoint
+  const quoteData = await proxyFetch(
+    `https://groww.in/v1/api/stocks/explore/v2/indices/TRADED/stocks/NSE/${searchId}`
+  );
+  if (!quoteData) return null;
+
+  const ltp = quoteData.ltp || quoteData.currentPrice;
+  if (!ltp) return null;
+
+  const prev = quoteData.previousClose || quoteData.close52WeekLow || ltp;
+  const chg = prev ? +((( ltp - prev ) / prev * 100).toFixed(2)) : 0;
+  const chgAmt = (ltp - prev).toFixed(2);
+  const w52h = quoteData.high52Week ? `52W: ₹${quoteData.low52Week}–₹${quoteData.high52Week}` : '';
+  const mcap = quoteData.marketCap;
+  const mcStr = mcap ? (mcap >= 1e5 ? (mcap/1e5).toFixed(0)+' Cr' : mcap+' Cr') : '';
+
+  return { price: ltp, chg, chgAmt, extra: [mcStr, w52h].filter(Boolean).join(' • '), source: 'GROWW' };
+}
+
+// ── SOURCE 2: NSE INDIA ──────────────────────────
+async function fetchFromNSE(sym) {
+  const data = await proxyFetch(
+    `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(sym)}`
+  );
+  if (!data) return null;
+  const price = data?.priceInfo?.lastPrice;
+  if (!price) return null;
+  const prev = data?.priceInfo?.previousClose || price;
+  const chg = +((( price - prev ) / prev * 100).toFixed(2));
+  const mcap = data?.securityInfo?.issuedSize;
+  return { price, chg, extra: '', source: 'NSE' };
+}
+
+// ── SOURCE 3: YAHOO FINANCE ──────────────────────
+async function fetchFromYahoo(sym) {
+  for (const suffix of ['.NS', '.BO']) {
+    const data = await proxyFetch(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${sym}${suffix}?interval=1d&range=5d`
+    );
+    const meta = data?.chart?.result?.[0]?.meta;
+    if (meta?.regularMarketPrice) {
+      const price = meta.regularMarketPrice;
+      const prev = meta.chartPreviousClose || price;
+      const chg = +((( price - prev ) / prev * 100).toFixed(2));
+      const ex = suffix === '.NS' ? 'NSE' : 'BSE';
+      return { price, chg, extra: '', source: ex };
+    }
+  }
+  return null;
+}
+
+// ── MAIN FETCH ORCHESTRATOR ──────────────────────
+async function fetchLivePrice(baseSym, displayName) {
+  const sym = baseSym.replace(/\.(NS|BO)$/i, '').toUpperCase();
+  document.getElementById('hyperStockMeta').innerHTML =
+    `<span style="color:var(--text3);display:flex;align-items:center;gap:7px;">
+       <span class="spinner" style="width:11px;height:11px;border-width:1.5px;display:inline-block"></span>
+       Groww se live price fetch ho rahi hai (${sym})...
+     </span>`;
+
+  // Try all 3 sources in order
+  const result =
+    await fetchFromGroww(sym) ||
+    await fetchFromNSE(sym)   ||
+    await fetchFromYahoo(sym);
+
+  if (result) {
+    currentHyperStock.price = result.price;
+    currentHyperStock.chg   = result.chg;
+    showLiveBadge(result.source, result.price, result.chg, result.extra);
+  } else {
+    document.getElementById('hyperStockMeta').innerHTML =
+      `<span style="color:var(--yellow)">⚠️ Live price abhi unavailable</span> &nbsp;•&nbsp;
+       <span style="color:var(--text2)">AI estimated price se analysis karega — results accurate honge</span>`;
+  }
+}
+
+function openHyperPanelByName(query) { openHyperPanelCustom(query); }
+function closeHyperPanel() {
+  document.getElementById('hyperPanel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function resetModules() {
+  for(let i=0;i<8;i++) {
+    const btn = document.getElementById('runBtn'+i);
+    if(btn) { btn.disabled = false; btn.innerHTML = MODULE_CONFIG[i].btnText; }
+    const out = document.getElementById('modOut'+i);
+    if(out) out.innerHTML = `<div style="color:var(--text3);font-size:12px;">${MODULE_CONFIG[i].placeholder}</div>`;
+  }
+  switchModTab(0, document.querySelector('.mod-tab'));
+  // Auto-load quick summary
+  setTimeout(loadQuickSummary, 300);
+}
+
+// ═══════════════════════════════════════════════════
+//  QUICK SUMMARY — Auto loads: Decision, Profit, Risk, Hold, Entry
+// ═══════════════════════════════════════════════════
+function resetQuickBar() {
+  ['qbDec','qbProfit','qbRisk','qbHold','qbEntry'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:1.5px;"></div>';
+  });
+}
+
+async function loadQuickSummary() {
+  const s = currentHyperStock;
+  resetQuickBar();
+
+  const prompt = `You are a rapid investment AI. For ${s.name} (${s.sym || s.name}), Indian stock, price ₹${s.price || 'market'}, sector: ${s.sec || 'Indian Market'}.
+
+Return ONLY a JSON object (no markdown, no explanation):
+{
+  "decision": "BUY" or "HOLD" or "SELL",
+  "decisionReason": "5 word reason",
+  "profitMin": 12,
+  "profitMax": 22,
+  "riskMin": 5,
+  "riskMax": 12,
+  "holdDays": 60,
+  "holdLabel": "2-3 mahine",
+  "entryLow": 2750,
+  "entryHigh": 2900,
+  "stopLoss": 2600,
+  "confidence": 78
+}
+
+Base on current Indian market fundamentals. Estimates clearly.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.map(c=>c.text||'').join('') || '{}';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const d = JSON.parse(clean);
+
+    // Decision
+    const decEl = document.getElementById('qbDec');
+    const decColor = d.decision==='BUY' ? 'var(--g1)' : d.decision==='SELL' ? 'var(--red)' : 'var(--yellow)';
+    decEl.innerHTML = `<span style="color:${decColor};font-size:16px;font-weight:800;">${d.decision||'—'}</span>`;
+    document.getElementById('qbDecSub').textContent = (d.decisionReason||'') + (d.confidence ? ' • ' + d.confidence + '%' : '');
+
+    // Profit
+    document.getElementById('qbProfit').textContent = d.profitMin && d.profitMax ? `+${d.profitMin}–${d.profitMax}%` : '—';
+    document.getElementById('qbProfitSub').textContent = 'expected gain';
+
+    // Risk
+    document.getElementById('qbRisk').textContent = d.riskMin && d.riskMax ? `-${d.riskMin}–${d.riskMax}%` : '—';
+    document.getElementById('qbRiskSub').textContent = 'max downside';
+
+    // Holding
+    document.getElementById('qbHold').textContent = d.holdLabel || (d.holdDays ? d.holdDays+' din' : '—');
+    document.getElementById('qbHoldSub').textContent = d.holdDays ? 'ideal hold period' : '';
+
+    // Entry
+    document.getElementById('qbEntry').textContent = d.entryLow && d.entryHigh
+      ? `₹${d.entryLow.toLocaleString('en-IN')}–${d.entryHigh.toLocaleString('en-IN')}`
+      : '—';
+    document.getElementById('qbEntrySub').textContent = d.stopLoss ? `SL: ₹${d.stopLoss.toLocaleString('en-IN')}` : 'entry range';
+
+  } catch(e) {
+    // On error, show dashes
+    ['qbDec','qbProfit','qbRisk','qbHold','qbEntry'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.textContent = '—';
+    });
+    document.getElementById('qbDecSub').textContent = 'AI analysis karo';
+  }
+}
+function switchModTab(idx, el) {
+  document.querySelectorAll('.mod-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mod-content').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.mod-tab')[idx]?.classList.add('active');
+  document.getElementById('mod-'+idx)?.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+//  8 MODULE CONFIGURATIONS
+// ═══════════════════════════════════════════════════
+const MODULE_CONFIG = [
+  {
+    id: 0,
+    btnText: '📊 Goldman Sachs Screener Analysis Run karo',
+    placeholder: 'Goldman Sachs style screener analysis — PE ratio, revenue growth, competitive moat, entry/exit zones, bull/bear targets.',
+    prompt: (s) => `You are Goldman Sachs Equity Research AI. Analyze ${s.name} (${s.sym}) — BSE/NSE listed Indian company. Sector: ${s.sec}. Price: ₹${s.price||'market price'}.
+
+MODULE 1 — GOLDMAN SACHS SCREENER ANALYSIS:
+Produce EXACTLY this output in Hinglish:
+
+📊 GOLDMAN SACHS SCREENER — ${s.name}
+══════════════════════════════════
+
+📌 STOCK PROFILE
+• Company: ${s.name} (${s.sym})
+• Sector: ${s.sec}
+• Market Cap Category: [Large/Mid/Small]
+• Current Price: ₹[estimate]
+
+📊 VALUATION METRICS
+• P/E Ratio: [estimate] vs Sector Average [estimate] → [Cheap/Fair/Expensive]
+• P/B Ratio: [estimate]
+• EV/EBITDA: [estimate]
+
+📈 GROWTH METRICS (5-year trend)
+• Revenue Growth: [% CAGR estimate]
+• EPS Growth: [% CAGR estimate]
+• PAT Growth: [%]
+• Revenue Growth Trend: [Accelerating/Stable/Decelerating]
+
+💰 FINANCIAL HEALTH
+• Debt-to-Equity: [Low/Moderate/High] — [ratio estimate]
+• Interest Coverage: [x times estimate]
+• ROE: [% estimate]
+• ROCE: [% estimate]
+
+🏰 COMPETITIVE MOAT
+• Moat Strength: [Strong/Moderate/Weak]
+• Moat Type: [Brand/Cost/Network/Patent/Switching Costs]
+• Reason: [2 line explanation]
+
+🎯 PRICE TARGETS (12 months)
+• Bull Case Target: ₹[estimate] (+[%])
+• Bear Case Target: ₹[estimate] (-[%])
+• Base Case Target: ₹[estimate] (+[%])
+• Ideal Entry Zone: ₹[low] – ₹[high]
+• Stop Loss: ₹[level]
+
+✅ GOLDMAN DECISION: [BUY/HOLD/SELL] — Confidence: [%]
+📌 Final Advice: [2-3 lines simple Hinglish mein]
+⚠️ Key Risk: [1 line]`
+  },
+  {
+    id: 1,
+    btnText: '💎 Morgan Stanley DCF Valuation Run karo',
+    placeholder: '5-year revenue projection, FCF calculation, WACC, Terminal Value (Exit Multiple + Perpetuity), sensitivity analysis table, intrinsic value vs market price.',
+    prompt: (s) => `You are Morgan Stanley Valuation AI. Perform DCF analysis for ${s.name} (${s.sym}), Indian company, Sector: ${s.sec}, Price: ₹${s.price||'market price'}.
+
+MODULE 2 — MORGAN STANLEY DCF VALUATION:
+Produce EXACTLY this in Hinglish:
+
+💎 MORGAN STANLEY DCF — ${s.name}
+══════════════════════════════════
+
+📐 ASSUMPTIONS
+• Base Revenue (FY24E): ₹[estimate] Cr
+• Revenue Growth Rate: Yr1:[%] Yr2:[%] Yr3:[%] Yr4:[%] Yr5:[%]
+• EBITDA Margin: [%]
+• Tax Rate: [%]
+• CapEx % of Revenue: [%]
+• Working Capital Change: [%]
+
+📊 5-YEAR FREE CASH FLOW (₹ Crore)
+Year | Revenue | EBITDA | FCF
+FY25 | [est]   | [est]  | [est]
+FY26 | [est]   | [est]  | [est]
+FY27 | [est]   | [est]  | [est]
+FY28 | [est]   | [est]  | [est]
+FY29 | [est]   | [est]  | [est]
+
+💰 WACC CALCULATION
+• Cost of Equity (CAPM): [%]
+• Cost of Debt (post-tax): [%]
+• D/E Weight: [equity%] / [debt%]
+• WACC: [%]
+
+🏁 TERMINAL VALUE
+• Exit Multiple Method: [x EBITDA] = ₹[Cr]
+• Perpetuity Growth Method (g=[%]): ₹[Cr]
+• Average Terminal Value: ₹[Cr]
+
+📊 SENSITIVITY TABLE (Intrinsic Value ₹/share)
+WACC↓ / Growth→ | [low%] | [mid%] | [high%]
+[low%] WACC     | [₹]    | [₹]    | [₹]
+[mid%] WACC     | [₹]    | [₹]    | [₹]
+[high%] WACC    | [₹]    | [₹]    | [₹]
+
+🎯 VERDICT
+• Intrinsic Value (Base): ₹[estimate]
+• Current Market Price: ₹${s.price||'market'}
+• Upside/Downside: [%]
+• Verdict: [UNDERVALUED/FAIRLY VALUED/OVERVALUED]
+📌 Morgan Stanley Say: [2 lines Hinglish]`
+  },
+  {
+    id: 2,
+    btnText: '🛡️ Bridgewater Risk Analysis Run karo',
+    placeholder: 'Correlation, sector concentration, recession stress test, liquidity risk, tail risk scenarios, hedging strategies, rebalancing plan.',
+    prompt: (s) => `You are Bridgewater Associates Risk AI. Analyze risk profile of ${s.name} (${s.sym}), Sector: ${s.sec}, Price: ₹${s.price||'market'}.
+
+MODULE 3 — BRIDGEWATER RISK ANALYSIS:
+
+🛡️ BRIDGEWATER RISK — ${s.name}
+══════════════════════════════════
+
+🔗 CORRELATION ANALYSIS
+• Correlation with NIFTY 50: [High/Medium/Low — beta estimate]
+• Beta: [estimate]
+• Correlation with sector peers: [High/Medium/Low]
+• Diversification benefit: [Strong/Moderate/Weak]
+
+📊 SECTOR CONCENTRATION RISK
+• Sector Cyclicality: [High/Medium/Low]
+• Revenue Concentration: [Diversified/Concentrated]
+• Geographic Risk: [India-focused/Global]
+
+📉 RECESSION STRESS TEST
+• Expected drawdown in mild recession: [-X% to -Y%]
+• Expected drawdown in severe recession: [-X% to -Y%]
+• Historical max drawdown: [-[%] estimated]
+• Recovery time estimate: [X–Y months]
+
+💧 LIQUIDITY RISK
+• Liquidity Rating: [Low/Medium/High risk]
+• Average daily volume: [High/Medium/Low]
+• Free float: [High/Medium/Low]
+• Bid-ask spread: [Tight/Normal/Wide]
+
+🌪️ TAIL RISK SCENARIOS
+Scenario 1 (Prob [%]): [Event] → Impact: [-[%]]
+Scenario 2 (Prob [%]): [Event] → Impact: [-[%]]
+Scenario 3 (Prob [%]): [Event] → Impact: [-[%]]
+
+🛡️ HEDGING STRATEGIES
+1. [Strategy — e.g., Put options ke through hedge karo]
+2. [Strategy — e.g., Sector rotation plan]
+3. [Strategy — e.g., Stop loss placement]
+
+⚖️ REBALANCING PLAN
+• Suggested portfolio weight: [X%]
+• Rebalance trigger: [condition]
+• Exit signal: [condition]
+
+🎯 RISK VERDICT: [LOW/MEDIUM/HIGH RISK]
+📌 Bridgewater Say: [2 lines Hinglish mein risk management advice]`
+  },
+  {
+    id: 3,
+    btnText: '📈 JPMorgan Earnings Analysis Run karo',
+    placeholder: 'Last 4 quarters earnings vs estimates, upcoming quarter expectations, key metrics, options implied move, historical reactions, bull/bear scenarios.',
+    prompt: (s) => `You are JPMorgan Equity Research AI. Earnings analysis for ${s.name} (${s.sym}), Sector: ${s.sec}, Price: ₹${s.price||'market'}.
+
+MODULE 4 — JPMORGAN EARNINGS ANALYSIS:
+
+📈 JPMORGAN EARNINGS — ${s.name}
+══════════════════════════════════
+
+📊 LAST 4 QUARTERS PERFORMANCE
+Quarter | Revenue (Cr) | EPS (₹) | vs Estimate | Reaction
+Q1 FY24 | [est]        | [est]   | [Beat/Miss %] | [+/-% stock move]
+Q2 FY24 | [est]        | [est]   | [Beat/Miss %] | [+/-% stock move]
+Q3 FY24 | [est]        | [est]   | [Beat/Miss %] | [+/-% stock move]
+Q4 FY24 | [est]        | [est]   | [Beat/Miss %] | [+/-% stock move]
+
+📅 UPCOMING QUARTER EXPECTATIONS
+• Expected Revenue: ₹[estimate] Cr ([+/-% YoY])
+• Expected EPS: ₹[estimate] ([+/-% YoY])
+• Consensus: [Bullish/Neutral/Cautious]
+• Key catalyst to watch: [specific metric]
+
+🔑 KEY METRICS TO WATCH
+1. [Metric 1 — e.g., Order book, margin expansion]
+2. [Metric 2]
+3. [Metric 3]
+
+📊 OPTIONS MARKET SIGNAL
+• Implied Move at earnings: ±[%]
+• Put/Call Ratio: [Bullish/Bearish/Neutral]
+• Options sentiment: [Fear/Greed/Neutral]
+
+🐂 BULL CASE SCENARIO
+• Revenue beats by [%], EPS at ₹[level]
+• Stock reaction: +[%] to +[%]
+• Probability: [%]
+
+🐻 BEAR CASE SCENARIO
+• Revenue misses, margin pressure
+• Stock reaction: -[%] to -[%]
+• Probability: [%]
+
+📌 JPMORGAN RECOMMENDATION
+Action: [BUY BEFORE / SELL BEFORE / WAIT / HOLD THROUGH] earnings
+Reason: [2 lines Hinglish mein]
+Risk: [1 line]`
+  },
+  {
+    id: 4,
+    btnText: '🏛️ BlackRock Portfolio Builder Run karo',
+    placeholder: 'Asset allocation, ETF suggestions, core vs satellite positions, expected returns, max drawdown, tax efficiency, Investment Policy Statement.',
+    prompt: (s) => `You are BlackRock Aladdin Portfolio AI. Build a portfolio recommendation involving ${s.name} (${s.sym}), Sector: ${s.sec}.
+
+MODULE 5 — BLACKROCK PORTFOLIO BUILDER:
+
+🏛️ BLACKROCK PORTFOLIO — ${s.name}
+══════════════════════════════════
+
+📊 SUGGESTED ASSET ALLOCATION
+• Large Cap Equity (India): [%]
+• Mid/Small Cap Equity: [%]
+• International Equity: [%]
+• Bonds/Debt Funds: [%]
+• Gold/Commodities: [%]
+• REITs/Alternatives: [%]
+• Cash: [%]
+
+🏗️ CORE HOLDINGS (60-70% of equity)
+1. ${s.name} — [Weight %] — [Reason]
+2. [Complementary stock 1] — [Weight %]
+3. [Complementary stock 2] — [Weight %]
+4. [Diversifying stock] — [Weight %]
+
+🛸 SATELLITE POSITIONS (30-40% of equity)
+1. [High-growth stock] — [Weight %] — [Thesis]
+2. [Thematic play] — [Weight %]
+3. [Defensive stock] — [Weight %]
+
+📊 SUGGESTED ETFs/INDEX FUNDS
+• Core: [Nifty 50 ETF or equivalent]
+• Sector: [Relevant sector ETF]
+• International: [US/Global ETF]
+• Debt: [Liquid Fund / Short Duration Fund]
+
+📈 EXPECTED RETURNS (Annual)
+• Conservative Scenario: [%]
+• Base Scenario: [%]
+• Optimistic Scenario: [%]
+• Maximum Drawdown (expected): [-[%]]
+
+💰 TAX EFFICIENCY
+• Holding >1 year → LTCG 10% above ₹1L
+• SIP vs Lumpsum: [Recommendation]
+• Tax-loss harvesting opportunity: [Yes/No]
+
+📋 INVESTMENT POLICY STATEMENT
+Objective: [Growth/Income/Balanced]
+Risk Level: [Conservative/Moderate/Aggressive]
+Time Horizon: [X years]
+Rebalance: [Quarterly/Annually]
+Exit Criteria: [When to exit ${s.sym}]
+
+🎯 BLACKROCK VERDICT: [BUY/ADD/HOLD]
+📌 Allocation Advice: [2 lines Hinglish mein]`
+  },
+  {
+    id: 5,
+    btnText: '⚡ Citadel Technical Analysis Run karo',
+    placeholder: 'Trend analysis (daily/weekly/monthly), support/resistance, moving averages, RSI, MACD, Bollinger Bands, chart patterns, Fibonacci, trade setup.',
+    prompt: (s) => `You are Citadel Quantitative Technical Analysis AI. Technical analysis for ${s.name} (${s.sym}), approx price ₹${s.price||'market'}.
+
+MODULE 6 — CITADEL TECHNICAL ANALYSIS:
+
+⚡ CITADEL TECHNICAL — ${s.name}
+══════════════════════════════════
+
+📊 TREND ANALYSIS
+• Daily Trend: [Uptrend/Downtrend/Sideways] — Strength: [Strong/Weak]
+• Weekly Trend: [Uptrend/Downtrend/Sideways]
+• Monthly Trend: [Uptrend/Downtrend/Sideways]
+• Trend Alignment: [All Bullish/Mixed/All Bearish]
+
+🏋️ KEY SUPPORT & RESISTANCE
+• Strong Resistance: ₹[level 1], ₹[level 2]
+• Strong Support: ₹[level 1], ₹[level 2]
+• Breakout Level: ₹[level — if breaks, strong buy]
+• Breakdown Level: ₹[level — if breaks, stop loss]
+
+📉 MOVING AVERAGES
+• 50-DMA: ₹[estimate] — Price [Above/Below] → [Bullish/Bearish]
+• 100-DMA: ₹[estimate] — Price [Above/Below]
+• 200-DMA: ₹[estimate] — Price [Above/Below] → [Trend]
+• MA Signal: [Golden Cross/Death Cross/Neutral]
+
+📊 INDICATORS
+• RSI (14): [estimated value] → [Oversold<30/Neutral/Overbought>70]
+• RSI Signal: [Buy/Sell/Hold]
+• MACD: [Positive/Negative crossover / Divergence]
+• MACD Signal: [Bullish/Bearish]
+• Bollinger Bands: [Upper band: ₹X, Lower band: ₹Y]
+• BB Signal: [Near upper-band squeeze/expansion]
+
+📐 FIBONACCI LEVELS (from recent swing)
+• 23.6%: ₹[level]
+• 38.2%: ₹[level]
+• 50.0%: ₹[level]
+• 61.8% (Golden): ₹[level]
+• 78.6%: ₹[level]
+
+🎨 CHART PATTERNS
+• Detected Pattern: [Cup & Handle / Head & Shoulders / Double Bottom / Breakout etc.]
+• Pattern Status: [Forming/Confirmed/Invalidated]
+• Pattern Target: ₹[price target from pattern]
+
+🎯 TRADE SETUP
+• Entry Point: ₹[price range]
+• Stop Loss: ₹[price] — [% below]
+• Target 1: ₹[price] (+[%])
+• Target 2: ₹[price] (+[%])
+• Risk/Reward Ratio: 1:[X]
+• Trade Type: [Positional/Swing/Long-term]
+
+⚡ CITADEL SIGNAL: [STRONG BUY/BUY/NEUTRAL/SELL]
+📌 Technical Advice: [2 lines Hinglish — kab entry karo, kab exit karo]`
+  },
+  {
+    id: 6,
+    btnText: '🎓 Harvard Dividend Strategy Run karo',
+    placeholder: 'Dividend yield, safety score, payout ratio, monthly income projection, DRIP 10-year projection, dividend growth estimate.',
+    prompt: (s) => `You are Harvard Endowment Dividend Strategy AI. Dividend analysis for ${s.name} (${s.sym}), Sector: ${s.sec}, Price: ₹${s.price||'market'}.
+
+MODULE 7 — HARVARD DIVIDEND STRATEGY:
+
+🎓 HARVARD DIVIDEND — ${s.name}
+══════════════════════════════════
+
+💰 DIVIDEND PROFILE
+• Annual Dividend (estimate): ₹[amount per share]
+• Dividend Yield: [%] vs FD Rate 7% → [Better/Worse]
+• Dividend Frequency: [Annual/Quarterly/Irregular]
+• Dividend Consistency: [Regular since FY___]
+
+🛡️ DIVIDEND SAFETY ANALYSIS
+• Dividend Safety Score: [X/10]
+• Payout Ratio: [%] → [Safe <60% / Moderate / Risky >80%]
+• Free Cash Flow Coverage: [FCF covers dividend X times]
+• Promoter Confidence: [High/Medium/Low dividend raiser]
+
+📊 DIVIDEND GROWTH (5-year estimate)
+Year | Dividend (₹) | Growth %
+FY24 | [est]        | [est%]
+FY25 | [est]        | [est%]
+FY26 | [est]        | [est%]
+FY27 | [est]        | [est%]
+FY28 | [est]        | [est%]
+5yr CAGR: [%]
+
+💼 INCOME PROJECTION (₹1 Lakh invested)
+• Annual income today: ₹[amount]
+• Monthly income: ₹[amount]
+• Income after 5 years (with DGR): ₹[amount]
+
+🔄 DRIP PROJECTION (DIVIDEND REINVESTMENT — 10 years)
+• Investment: ₹1,00,000
+• After 10 years (with reinvestment): ₹[estimate]
+• DRIP CAGR: [%]
+• Shares accumulated: [estimate]
+
+🏆 COMPARISON WITH PEERS
+Company | Yield | Safety | Growth
+${s.name} | [%] | [/10] | [%]
+[Peer 1] | [%] | [/10] | [%]
+[Peer 2] | [%] | [/10] | [%]
+
+🎯 HARVARD DIVIDEND VERDICT
+• For Income Investors: [Excellent/Good/Average/Poor]
+• Dividend Rank in Sector: [Top/Middle/Bottom]
+📌 Harvard Say: [2 lines Hinglish — dividend strategy ke baare mein]`
+  },
+  {
+    id: 7,
+    btnText: '🔬 Bain & Co Competitive Analysis Run karo',
+    placeholder: 'Top 5-7 competitors, market cap comparison, revenue+profit table, competitive moat, market share trends, management quality, SWOT, best pick.',
+    prompt: (s) => `You are Bain & Company Strategy AI. Competitive analysis for ${s.name} (${s.sym}) in ${s.sec} sector.
+
+MODULE 8 — BAIN & CO COMPETITIVE ANALYSIS:
+
+🔬 BAIN COMPETITIVE — ${s.name}
+══════════════════════════════════
+
+🏆 COMPETITOR LANDSCAPE (${s.sec} Sector)
+Company | MCap(Cr) | Rev(Cr) | Net Margin | Moat | Rating
+${s.name} | [est]   | [est]   | [est%]     | [type] | [/10]
+[Competitor 1] | [est] | [est] | [est%] | [type] | [/10]
+[Competitor 2] | [est] | [est] | [est%] | [type] | [/10]
+[Competitor 3] | [est] | [est] | [est%] | [type] | [/10]
+[Competitor 4] | [est] | [est] | [est%] | [type] | [/10]
+
+📊 MARKET SHARE TRENDS (Last 3 years)
+• ${s.name} market share: FY22:[%] → FY23:[%] → FY24:[%]
+• Trend: [Gaining/Stable/Losing share]
+• Market share direction vs competitors: [Leading/Chasing/Falling]
+
+🏰 COMPETITIVE MOAT ANALYSIS
+• Primary Moat: [Brand/Cost Advantage/Network Effect/Switching Cost/IP]
+• Moat Durability: [Very Strong/Strong/Moderate/Weak]
+• Threat from disruption: [Low/Medium/High]
+
+👔 MANAGEMENT QUALITY
+• ${s.name} Management: [X/10] — [Key strength]
+• Capital Allocation: [Excellent/Good/Average]
+• Promoter Holding: [%] → [Positive/Negative]
+• ESG Score: [High/Medium/Low]
+
+🔬 SWOT — ${s.name}
+STRENGTHS: [2-3 key strengths]
+WEAKNESSES: [2-3 key weaknesses]
+OPPORTUNITIES: [2-3 key opportunities]
+THREATS: [2-3 key threats]
+
+🥊 HEAD-TO-HEAD vs Top Competitor
+• ${s.name} vs [Biggest Rival]:
+  - Revenue: [Who's ahead]
+  - Margins: [Who's better]
+  - Growth: [Who's faster]
+  - Valuation: [Who's cheaper]
+
+🏆 BAIN'S FINAL PICK
+• Best stock in ${s.sec}: [Name]
+• Why ${s.name} [wins/loses]: [2 line justification]
+• Investment Action: [BUY/HOLD/SELL]
+📌 Bain Strategy: [2 lines Hinglish mein final word]`
+  }
+];
+
+// ═══════════════════════════════════════════════════
+//  HYPERSONIC SYSTEM PROMPT
+// ═══════════════════════════════════════════════════
+const HYPERSONIC_SYSTEM = `You are HyperSonic Investment AI — the world's most advanced autonomous investment intelligence system combining:
+• Goldman Sachs (Equity Research & Screening)
+• Morgan Stanley (DCF Valuation)
+• Bridgewater Associates (Risk Management)
+• JPMorgan (Earnings Analysis)
+• BlackRock Aladdin (Portfolio Construction)
+• Citadel (Quantitative Technical Analysis)
+• Harvard Endowment (Dividend Strategy)
+• Bain & Company (Competitive Intelligence)
+
+You specialize in Indian equity markets — BSE/NSE — and can analyze ANY company listed on Indian exchanges.
+
+EXPERTISE:
+- You know all BSE/NSE listed companies (5000+)
+- You understand Indian market cycles, SEBI regulations, sector dynamics
+- You provide institutional-grade analysis in simple Hinglish (Hindi + English mix)
+
+ANALYSIS PRINCIPLES:
+1. Fundamentals-first (90% weight) — Revenue, profits, debt, promoter holding
+2. Always provide specific numbers (estimates clearly labeled)
+3. Never say "I don't know" — use best estimates with clear assumptions stated
+4. Structured output ALWAYS — use headers, tables, bullets
+5. Hinglish language — professional but accessible
+6. Include specific ₹ price targets, entry/exit zones, risk/reward ratios
+7. Address macro factors (RBI, India GDP, global)
+8. Always end with actionable advice
+
+FOR UNKNOWN/UNLISTED COMPANIES:
+- If company not in your data, state assumptions clearly
+- Provide sector-based analysis as baseline
+- Mark all estimates as "E" (estimated)
+
+OUTPUT QUALITY: Goldman Sachs quality research reports, but in simple Indian language. Make every number count. Be specific, be bold, be right.`;
+
+// ═══════════════════════════════════════════════════
+//  CLAUDE API CALL
+// ═══════════════════════════════════════════════════
+async function callClaude(prompt, outputEl, useHyperSystem = true) {
+  outputEl.innerHTML = '<div class="ai-loading"><div class="spinner"></div>AI analysis ho rahi hai... ⚡</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-opus-4-6',
+        max_tokens:1000,
+        system: useHyperSystem ? HYPERSONIC_SYSTEM : HYPERSONIC_SYSTEM,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(c=>c.text||'').join('') || 'Error: Response nahi mili';
+    outputEl.innerHTML = `<div class="ai-output">${text}</div>`;
+  } catch(e) {
+    outputEl.innerHTML = `<div style="color:var(--red);font-size:12px;">❌ API Error: ${e.message}<br><br>Note: API key browser mein set hona chahiye ya CORS issue ho sakta hai.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  RUN INDIVIDUAL MODULE
+// ═══════════════════════════════════════════════════
+async function runModule(idx) {
+  const cfg = MODULE_CONFIG[idx];
+  const btn = document.getElementById('runBtn'+idx);
+  const out = document.getElementById('modOut'+idx);
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="display:inline-block;margin-right:6px;"></div>Analysis ho rahi hai...';
+  const prompt = cfg.prompt(currentHyperStock);
+  await callClaude(prompt, out);
+  btn.disabled = false;
+  btn.innerHTML = '↻ ' + cfg.btnText;
+}
+
+// ═══════════════════════════════════════════════════
+//  RUN ALL 8 MODULES
+// ═══════════════════════════════════════════════════
+async function runAllModules() {
+  const btn = document.getElementById('runAllBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="display:inline-block;margin-right:6px;"></div>Running all 8 modules...';
+  // Run all sequentially to avoid rate limits
+  for(let i=0; i<8; i++) {
+    const cfg = MODULE_CONFIG[i];
+    const runBtn = document.getElementById('runBtn'+i);
+    const out = document.getElementById('modOut'+i);
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<div class="spinner" style="display:inline-block;margin-right:6px;"></div>Running...';
+    // Switch to this tab so user sees progress
+    switchModTab(i, document.querySelectorAll('.mod-tab')[i]);
+    await callClaude(cfg.prompt(currentHyperStock), out);
+    runBtn.disabled = false;
+    runBtn.innerHTML = '✅ ' + cfg.btnText.replace('Run karo','Done');
+    // Small delay between modules
+    await new Promise(r => setTimeout(r, 800));
+  }
+  btn.disabled = false;
+  btn.innerHTML = '✅ All 8 Modules Complete!';
+  // Go back to first tab
+  switchModTab(0, document.querySelectorAll('.mod-tab')[0]);
+}
+
+// ═══════════════════════════════════════════════════
+//  DAILY AI
+// ═══════════════════════════════════════════════════
+function loadDailyAI() {
+  const el = document.getElementById('dailyAIContent');
+  callClaude(`Aaj ${new Date().toLocaleDateString('en-IN')} ke liye Indian equity market daily briefing do:
+
+1. Market Mood (Bullish/Bearish/Neutral) — confidence %
+2. Top 3 hot sectors aaj ke liye, kyon
+3. 3 specific BUY stocks — brief reason + entry zone
+4. 1 stock AVOID karo — kyon
+5. Global factor jo India market affect kar raha hai
+6. Ek line Hinglish summary
+
+Crisp, structured, actionable. Format with clear headings.`, el);
+}
+
+// ═══════════════════════════════════════════════════
+//  SECTORS
+// ═══════════════════════════════════════════════════
+const SECTORS = [
+  {name:'IT',status:'Strong',color:'var(--g1)',growth:'+12-20%',risk:'Low'},
+  {name:'Banking',status:'Strong',color:'var(--g1)',growth:'+10-18%',risk:'Medium'},
+  {name:'Pharma',status:'Strong',color:'var(--g1)',growth:'+14-22%',risk:'Low'},
+  {name:'Defence',status:'Strong',color:'var(--g1)',growth:'+22-35%',risk:'Low'},
+  {name:'Energy',status:'Neutral',color:'var(--yellow)',growth:'+8-15%',risk:'Medium'},
+  {name:'Auto',status:'Strong',color:'var(--g1)',growth:'+12-22%',risk:'Medium'},
+  {name:'FMCG',status:'Weak',color:'var(--red)',growth:'+4-8%',risk:'Low'},
+  {name:'Real Estate',status:'Strong',color:'var(--g1)',growth:'+18-30%',risk:'High'},
+  {name:'Infrastructure',status:'Strong',color:'var(--g1)',growth:'+16-28%',risk:'Medium'},
+  {name:'Metals',status:'Neutral',color:'var(--yellow)',growth:'+6-14%',risk:'High'},
+  {name:'Telecom',status:'Strong',color:'var(--g1)',growth:'+10-16%',risk:'Medium'},
+  {name:'Financial',status:'Strong',color:'var(--g1)',growth:'+12-22%',risk:'Medium'},
+  {name:'Power',status:'Strong',color:'var(--g1)',growth:'+20-35%',risk:'Medium'},
+  {name:'Chemical',status:'Neutral',color:'var(--yellow)',growth:'+8-15%',risk:'Medium'},
+  {name:'Healthcare',status:'Strong',color:'var(--g1)',growth:'+14-22%',risk:'Low'},
+  {name:'PSU',status:'Strong',color:'var(--g1)',growth:'+18-28%',risk:'Medium'},
+  {name:'New-Age Tech',status:'Strong',color:'var(--g1)',growth:'+25-45%',risk:'High'},
+  {name:'Cement',status:'Neutral',color:'var(--yellow)',growth:'+7-13%',risk:'Medium'},
+  {name:'Agriculture',status:'Neutral',color:'var(--yellow)',growth:'+6-12%',risk:'Medium'},
+  {name:'Textile',status:'Weak',color:'var(--red)',growth:'+3-8%',risk:'High'},
+];
+function renderSectors() {
+  const icon={Strong:'🟢',Neutral:'🟡',Weak:'🔴'};
+  document.getElementById('sectorGrid').innerHTML = SECTORS.map(s=>`
+    <div class="sector-card" onclick="analyzeSector('${s.name}')">
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-status" style="color:${s.color}">${icon[s.status]} ${s.status}</div>
+      <div class="sc-growth" style="color:${s.color}">${s.growth}</div>
+      <div class="sc-risk">Risk: ${s.risk}</div>
+    </div>
+  `).join('');
+}
+function analyzeSector(name) {
+  const panel = document.getElementById('sectorAiPanel');
+  panel.style.display='block';
+  document.getElementById('sectorAiTitle').textContent = `🧠 ${name} — 8-Module Analysis`;
+  panel.scrollIntoView({behavior:'smooth'});
+  callClaude(`Indian ${name} sector ka comprehensive institutional analysis karo:
+
+1. Current Status (Strong/Weak/Neutral) — specific reasons with data
+2. Top 5 companies — BUY/HOLD/SELL + brief reason + price estimate
+3. Growth potential next 6-12 months — specific % range
+4. Major risks (top 3) with probability
+5. Global factors affecting this sector
+6. Best stock pick from this sector — entry zone + target
+7. Avoid karne wali stocks — kyon
+
+Structured Hinglish mein output do. Goldman Sachs quality.`, document.getElementById('sectorAiOutput'));
+}
+
+// ═══════════════════════════════════════════════════
+//  NEWS
+// ═══════════════════════════════════════════════════
+const NEWS_DATA = [
+  {h:'RBI Monetary Policy — Interest Rates Unchanged at 6.5%',src:'Economic Times',time:'2h ago',impact:'Banking sector stable, Real Estate positive sign'},
+  {h:'SEBI tightens F&O rules — New margin requirements from July',src:'Business Standard',time:'4h ago',impact:'Short-term volatility expected in derivatives'},
+  {h:'IT sector order book strong — TCS, Infosys Q4 beat estimates',src:'Mint',time:'6h ago',impact:'IT stocks mein bullish momentum continue hoga'},
+  {h:'India GDP 7.2% — IMF revises forecast upward',src:'Reuters',time:'1d ago',impact:'Broad market positive — infrastructure, banking benefit'},
+  {h:'Crude oil drop to $82 — Import bill relief for India',src:'Bloomberg',time:'1d ago',impact:'Positive for OMCs, Airlines, Paint companies'},
+  {h:'China slowdown — Export-dependent sectors at risk',src:'Financial Express',time:'2d ago',impact:'Metals, Chemical mein caution'},
+  {h:'Defence Budget up 15% — Record order book for HAL, BEL',src:'Economic Times',time:'3d ago',impact:'Defence stocks mein strong rally expected'},
+  {h:'PLI Scheme expansion — Electronics, Solar Manufacturing',src:'Mint',time:'3d ago',impact:'Manufacturing stocks positive'},
+];
+function renderNews() {
+  document.getElementById('newsList').innerHTML = NEWS_DATA.map(n=>`
+    <div class="news-card">
+      <div class="news-headline">${n.h}</div>
+      <div class="news-meta"><span>${n.src}</span><span>${n.time}</span></div>
+      <div class="news-impact">💡 Impact: ${n.impact}</div>
+    </div>
+  `).join('');
+}
+function loadNewsAI() {
+  const panel = document.getElementById('newsAiPanel');
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth'});
+  callClaude(`In news headlines ka Indian stock market pe institutional-grade impact analysis karo:\n\n${NEWS_DATA.map(n=>'• '+n.h).join('\n')}\n\nHar news ke liye:\n1. Directly affected sectors + specific companies\n2. 48-hour impact estimate\n3. Long-term structural implication\n4. Specific actionable trade idea\n\nOverall market mood assessment aur Hinglish mein structured output do. JPMorgan quality.`, document.getElementById('newsAiOutput'));
+}
+
+// ═══════════════════════════════════════════════════
+//  ALERTS
+// ═══════════════════════════════════════════════════
+function renderAlerts() {
+  document.getElementById('alertsList').innerHTML = `
+    <div class="alert-card">
+      <div style="font-size:13px;font-weight:700;">⚠️ HIGH: NIFTY 50 — 24,800 Resistance Zone</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">Breakout ya reversal imminent — volume confirm nahi hai. Caution.</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;">Action: WAIT for confirmation • Updated 2 min ago</div>
+    </div>
+    <div class="alert-card">
+      <div style="font-size:13px;font-weight:700;">⚠️ HIGH: HAL — Breakout above ₹4,200</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">Defence sector momentum strong. Entry opportunity on breakout.</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;">Action: BUY on breakout confirmation • 5 min ago</div>
+    </div>
+    <div class="alert-card medium">
+      <div style="font-size:13px;font-weight:700;">🟡 MEDIUM: Zomato — Q4 earnings this week</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">Options market pricing ±8% move. Consensus bullish.</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;">Action: REVIEW position before earnings • 30 min ago</div>
+    </div>
+    <div class="alert-card medium">
+      <div style="font-size:13px;font-weight:700;">🟡 MEDIUM: Banking Sector — Unusual Volume Spike</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">HDFC Bank, ICICI mein block deals reported. Institution buying.</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;">Action: WATCH positions • 1 hr ago</div>
+    </div>
+    <div class="alert-card low">
+      <div style="font-size:13px;font-weight:700;">✅ LOW: SIP Opportunity — Midcap Correction</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">Midcap index 3% correction — good SIP entry window.</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;">Action: ACCUMULATE via SIP • Today</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+//  PORTFOLIO
+// ═══════════════════════════════════════════════════
+function addToPortfolio() {
+  const stock = document.getElementById('pStock').value.trim().toUpperCase();
+  const price = parseFloat(document.getElementById('pPrice').value);
+  const qty = parseInt(document.getElementById('pQty').value);
+  const date = document.getElementById('pDate').value;
+  if(!stock||!price||!qty) return;
+  const port = DB.get('portfolio') || [];
+  port.push({stock,price,qty,date,id:Date.now()});
+  DB.set('portfolio', port);
+  renderPortfolio();
+  const panel = document.getElementById('portAiPanel');
+  panel.style.display='block';
+  callClaude(`Portfolio Trade: ${stock} kharida ₹${price} pe, ${qty} shares (Total invested: ₹${(price*qty).toLocaleString()}) on ${date||'recently'}.
+
+8-module style analysis karo:
+1. DECISION: HOLD/ADD MORE/SELL NOW + strong reason
+2. P&L Estimate: current likely % gain/loss
+3. Target Exit Price: ₹[price] with timeframe
+4. Stop Loss: ₹[price] — strict
+5. Best Case: scenario + return
+6. Worst Case: scenario + loss
+7. Holding Duration: kitne din aur hold karo
+8. Risk Factors: top 2 risks
+9. Alternative: koi better stock hai is sector mein?
+
+BlackRock quality analysis, Hinglish mein.`, document.getElementById('portAiOutput'));
+  ['pStock','pPrice','pQty'].forEach(id=>document.getElementById(id).value='');
+}
+function renderPortfolio() {
+  const port = DB.get('portfolio') || [];
+  const el = document.getElementById('portfolioList');
+  if(!port.length) {
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:28px;">Abhi koi stock nahi hai. Upar se add karo.</div>';
+    return;
+  }
+  el.innerHTML = port.map(p => {
+    const st = STOCKS.find(s=>s.s===p.stock);
+    const curr = st ? st.price : p.price;
+    const pl = (((curr-p.price)/p.price)*100).toFixed(1);
+    const total = (curr*p.qty).toLocaleString();
+    return `<div class="port-card">
+      <div>
+        <div style="font-size:13px;font-weight:700;">${p.stock}</div>
+        <div style="font-size:11px;color:var(--text3);">Qty: ${p.qty} • Avg: ₹${p.price} • ${p.date||'—'}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px;font-weight:700;font-family:var(--mono);">₹${total}</div>
+        <div class="${pl>=0?'pos':'neg'}" style="font-size:12px;font-weight:600;font-family:var(--mono);">${pl>=0?'+':''}${pl}%</div>
+      </div>
+      <button class="btn-sm" style="padding:5px 11px;font-size:11px;" onclick="openHyperPanelCustom('${p.stock}')">⚡ AI</button>
+      <button class="btn-sm danger" style="font-size:11px;padding:5px 10px;" onclick="removePort(${p.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+function removePort(id) {
+  DB.set('portfolio', (DB.get('portfolio')||[]).filter(p=>p.id!==id));
+  renderPortfolio();
+}
+
+// ═══════════════════════════════════════════════════
+//  MARKET TICKER
+// ═══════════════════════════════════════════════════
+function updateMarketTicker() {
+  const nifty = Math.round(24820 + Math.random()*120-60);
+  const sensex = Math.round(81800 + Math.random()*400-200);
+  const bn = Math.round(52300 + Math.random()*250-125);
+  const nChg = +(Math.random()*2.4-0.6).toFixed(2);
+  document.getElementById('nifty').textContent = nifty.toLocaleString('en-IN');
+  document.getElementById('niftyChg').textContent = (nChg>=0?'+':'')+nChg+'%';
+  document.getElementById('niftyChg').className = 'mkt-chg '+(nChg>=0?'pos':'neg');
+  document.getElementById('sensex').textContent = sensex.toLocaleString('en-IN');
+  document.getElementById('banknifty').textContent = bn.toLocaleString('en-IN');
+  document.getElementById('c-nifty').textContent = nifty.toLocaleString('en-IN');
+  document.getElementById('c-sensex').textContent = sensex.toLocaleString('en-IN');
+}
+
+// ═══════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('open');
+  const codes = DB.get('inviteCodes') || [];
+  document.getElementById('myInviteCode').textContent = codes[0] || '----';
+  renderInviteList();
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+function renderInviteList() {
+  const users = DB.get('invitedUsers') || [];
+  document.getElementById('inviteList').innerHTML = users.length
+    ? users.map(u=>`<div class="invite-item"><span>👤 ${u}</span><button class="invite-del" onclick="removeInviteUser('${u}')">🗑️</button></div>`).join('')
+    : '<div style="color:var(--text3);font-size:12px;">Koi invited user nahi</div>';
+}
+function addInviteUser() {
+  const val = document.getElementById('newInviteUser').value.trim().toLowerCase();
+  if(!val) return;
+  const list = DB.get('invitedUsers') || [];
+  if(!list.includes(val)) { list.push(val); DB.set('invitedUsers', list); }
+  document.getElementById('newInviteUser').value='';
+  renderInviteList();
+}
+function removeInviteUser(u) {
+  DB.set('invitedUsers', (DB.get('invitedUsers')||[]).filter(x=>x!==u));
+  renderInviteList();
+}
+function genNewCode() {
+  const code = 'ASAM-' + rndStr();
+  const codes = DB.get('inviteCodes') || [];
+  codes.unshift(code);
+  DB.set('inviteCodes', codes.slice(0,10));
+  document.getElementById('myInviteCode').textContent = code;
+}
+function copyCode() {
+  const code = document.getElementById('myInviteCode').textContent;
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  const btn = event.target;
+  btn.textContent = '✅';
+  setTimeout(()=>btn.textContent='📋', 2000);
+}
+function changePassword() {
+  const old = document.getElementById('oldPass').value;
+  const nw = document.getElementById('newPass').value;
+  const cn = document.getElementById('confirmPass').value;
+  const msg = document.getElementById('passMsg');
+  const users = DB.get('users') || [];
+  const u = users.find(x=>x.username===currentUser.username);
+  if(!u||u.password!==old) { msg.style.color='var(--red)'; msg.textContent='❌ Current password galat hai'; return; }
+  if(nw.length<6) { msg.style.color='var(--red)'; msg.textContent='❌ Min 6 characters chahiye'; return; }
+  if(nw!==cn) { msg.style.color='var(--red)'; msg.textContent='❌ Passwords match nahi kar rahe'; return; }
+  u.password=nw; DB.set('users',users);
+  currentUser.password=nw; DB.set('session',currentUser);
+  msg.style.color='var(--g1)'; msg.textContent='✅ Password update ho gaya!';
+  ['oldPass','newPass','confirmPass'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+function loadAllData() {
+  renderHomeScreener();
+  renderPortfolio();
+  updateMarketTicker();
+  setInterval(updateMarketTicker, 10000);
+  setTimeout(loadDailyAI, 600);
+}
+</script>
+</body>
+</html>
