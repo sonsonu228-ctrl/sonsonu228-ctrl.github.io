@@ -442,13 +442,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <!-- MARKET BAR -->
   <div class="market-bar">
     <div class="mkt-item"><span class="mkt-name">NIFTY 50</span><span class="mkt-val pos" id="nifty">24,850</span><span class="mkt-chg pos" id="niftyChg">+0.8%</span></div>
-    <div class="mkt-item"><span class="mkt-name">SENSEX</span><span class="mkt-val pos" id="sensex">81,920</span><span class="mkt-chg pos">+0.7%</span></div>
-    <div class="mkt-item"><span class="mkt-name">BANK NIFTY</span><span class="mkt-val pos" id="banknifty">52,340</span><span class="mkt-chg neu">+0.3%</span></div>
-    <div class="mkt-item"><span class="mkt-name">₹/USD</span><span class="mkt-val neu">84.12</span><span class="mkt-chg neu">+0.04</span></div>
-    <div class="mkt-item"><span class="mkt-name">GOLD</span><span class="mkt-val pos">₹72,400</span><span class="mkt-chg pos">+0.3%</span></div>
-    <div class="mkt-item"><span class="mkt-name">CRUDE</span><span class="mkt-val neg">$82.4</span><span class="mkt-chg neg">-0.8%</span></div>
-    <div class="mkt-item"><span class="mkt-name">MIDCAP</span><span class="mkt-val pos">44,210</span><span class="mkt-chg pos">+1.1%</span></div>
-    <div class="mkt-item"><span class="mkt-name">SMALLCAP</span><span class="mkt-val pos">14,820</span><span class="mkt-chg pos">+1.4%</span></div>
+    <div class="mkt-item"><span class="mkt-name">SENSEX</span><span class="mkt-val pos" id="sensex">81,920</span><span class="mkt-chg pos" id="sensexChg">+0.7%</span></div>
+    <div class="mkt-item"><span class="mkt-name">BANK NIFTY</span><span class="mkt-val pos" id="banknifty">52,340</span><span class="mkt-chg neu" id="bankniftyChg">+0.3%</span></div>
+    <div class="mkt-item"><span class="mkt-name">MIDCAP</span><span class="mkt-val pos" id="midcap">44,210</span><span class="mkt-chg pos" id="midcapChg">+1.1%</span></div>
+    <div class="mkt-item"><span class="mkt-name">SMALLCAP</span><span class="mkt-val pos" id="smallcap">14,820</span><span class="mkt-chg pos" id="smallcapChg">+1.4%</span></div>
+    <div class="mkt-item"><span class="mkt-name">₹/USD</span><span class="mkt-val neu" id="usdinr">84.12</span><span class="mkt-chg neu" id="usdinrChg">Stable</span></div>
+    <div class="mkt-item"><span class="mkt-name">GOLD</span><span class="mkt-val pos" id="gold">₹72,400</span><span class="mkt-chg pos" id="goldChg">+0.3%</span></div>
+    <div class="mkt-item"><span class="mkt-name">CRUDE</span><span class="mkt-val neg" id="crude">$82.4</span><span class="mkt-chg neg" id="crudeChg">-0.8%</span></div>
   </div>
 
   <!-- ═══ HOME PAGE ═══ -->
@@ -685,6 +685,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="modal-header">
       <div class="modal-title">⚙️ Settings & Access Control</div>
       <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+      <div class="settings-section">
+      <div class="settings-section-title">🤖 Google Gemini API Key (FREE AI)</div>
+      <div class="inp-grp"><label>API Key (AIzaSy...)</label><input type="password" id="apiKeyInput" class="form-input" placeholder="AIzaSy..." /></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">FREE key lo: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--g1);">👉 aistudio.google.com</a> (No card needed!)</div>
+      <button class="btn-sm" onclick="saveApiKey()">✅ Save Key</button>
+      <div id="apiKeyMsg" style="font-size:12px;margin-top:7px;"></div>
     </div>
     <div class="settings-section">
       <div class="settings-section-title">🔐 Password Change</div>
@@ -1033,30 +1040,14 @@ async function searchStocks(query) {
       return;
     }
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 500,
-          system: `You are a BSE/NSE stock database. When given a search query, return a JSON array of matching Indian listed companies. Return ONLY valid JSON, no markdown, no explanation.
-
-Format: [{"name":"Company Name","symbol":"NSESYMBOL","sector":"Sector","price":1234,"dec":"BUY","cap":"large/mid/small","listed":"BSE/NSE/Both"}]
-
-Rules:
-- Return 4-6 best matching companies
-- Include companies matching by name, symbol, sector, or product
-- Include recently listed IPOs if relevant
-- Price should be approximate current estimate in ₹
-- dec: BUY/HOLD/SELL based on current fundamentals
-- If query is a sector (e.g. "defence"), return top companies in that sector
-- If query is a new/unknown company, still try your best
-- Return [] if truly no matches exist`,
-          messages: [{role:'user', content:`Search query: "${query}"\nFind matching BSE/NSE listed companies.`}]
-        })
-      });
+      const _sk = DB.get('anthropicKey') || '';
+      if (!_sk) { renderAISearchResults(query, [], localMatches, res); return; }
+      const _sp = 'You are a BSE/NSE stock database. Return ONLY a JSON array, no markdown, no extra text.\nFormat: [{"name":"Company Name","symbol":"NSESYMBOL","sector":"Sector","price":1234,"dec":"BUY","cap":"large/mid/small","listed":"BSE/NSE/Both"}]\nSearch: "' + query + '"\nReturn 4-6 best matching Indian listed companies.';
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_sk}`,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({contents:[{parts:[{text:_sp}]}],generationConfig:{maxOutputTokens:500,temperature:0.2}}) });
       const data = await response.json();
-      const text = data.content?.map(c=>c.text||'').join('') || '[]';
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
       const clean = text.replace(/```json|```/g,'').trim();
       const results = JSON.parse(clean);
       aiSearchCache[cacheKey] = results;
@@ -1333,17 +1324,13 @@ Return ONLY a JSON object (no markdown, no explanation):
 Base on current Indian market fundamentals. Estimates clearly.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        messages: [{role:'user', content: prompt}]
-      })
-    });
+    const _k2 = DB.get('anthropicKey') || '';
+    if (!_k2) { document.getElementById('qbDec').innerHTML='<span style="color:var(--yellow)">⚠️ API Key Set Karo</span>'; return; }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_k2}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:350,temperature:0.4}}) });
     const data = await res.json();
-    const raw = data.content?.map(c=>c.text||'').join('') || '{}';
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     const clean = raw.replace(/```json|```/g,'').trim();
     const d = JSON.parse(clean);
 
@@ -1865,23 +1852,35 @@ OUTPUT QUALITY: Goldman Sachs quality research reports, but in simple Indian lan
 //  CLAUDE API CALL
 // ═══════════════════════════════════════════════════
 async function callClaude(prompt, outputEl, useHyperSystem = true) {
+  const apiKey = DB.get('anthropicKey') || '';
+  if (!apiKey) {
+    outputEl.innerHTML = `<div style="color:var(--yellow);font-size:13px;line-height:2;">
+      ⚠️ <b>Gemini API Key nahi hai!</b><br>
+      Settings (⚙️) → <b>"🤖 Google Gemini API Key"</b> mein key daalo.<br>
+      <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--g1);">👉 aistudio.google.com — Bilkul FREE, Card nahi chahiye!</a>
+    </div>`;
+    return;
+  }
   outputEl.innerHTML = '<div class="ai-loading"><div class="spinner"></div>AI analysis ho rahi hai... ⚡</div>';
+  const fullPrompt = useHyperSystem ? HYPERSONIC_SYSTEM + '\n\n' + prompt : prompt;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-opus-4-6',
-        max_tokens:1000,
-        system: useHyperSystem ? HYPERSONIC_SYSTEM : HYPERSONIC_SYSTEM,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: fullPrompt }] }],
+          generationConfig: { maxOutputTokens: 1200, temperature: 0.7 }
+        })
+      }
+    );
     const data = await res.json();
-    const text = data.content?.map(c=>c.text||'').join('') || 'Error: Response nahi mili';
-    outputEl.innerHTML = `<div class="ai-output">${text}</div>`;
+    if (data.error) { outputEl.innerHTML = `<div style="color:var(--red);font-size:12px;">❌ ${data.error.message}</div>`; return; }
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Response nahi mili';
+    outputEl.innerHTML = `<div class="ai-output">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>')}</div>`;
   } catch(e) {
-    outputEl.innerHTML = `<div style="color:var(--red);font-size:12px;">❌ API Error: ${e.message}<br><br>Note: API key browser mein set hona chahiye ya CORS issue ho sakta hai.</div>`;
+    outputEl.innerHTML = `<div style="color:var(--red);font-size:12px;">❌ Error: ${e.message}</div>`;
   }
 }
 
@@ -2002,24 +2001,58 @@ Structured Hinglish mein output do. Goldman Sachs quality.`, document.getElement
 // ═══════════════════════════════════════════════════
 //  NEWS
 // ═══════════════════════════════════════════════════
-const NEWS_DATA = [
-  {h:'RBI Monetary Policy — Interest Rates Unchanged at 6.5%',src:'Economic Times',time:'2h ago',impact:'Banking sector stable, Real Estate positive sign'},
-  {h:'SEBI tightens F&O rules — New margin requirements from July',src:'Business Standard',time:'4h ago',impact:'Short-term volatility expected in derivatives'},
-  {h:'IT sector order book strong — TCS, Infosys Q4 beat estimates',src:'Mint',time:'6h ago',impact:'IT stocks mein bullish momentum continue hoga'},
-  {h:'India GDP 7.2% — IMF revises forecast upward',src:'Reuters',time:'1d ago',impact:'Broad market positive — infrastructure, banking benefit'},
-  {h:'Crude oil drop to $82 — Import bill relief for India',src:'Bloomberg',time:'1d ago',impact:'Positive for OMCs, Airlines, Paint companies'},
-  {h:'China slowdown — Export-dependent sectors at risk',src:'Financial Express',time:'2d ago',impact:'Metals, Chemical mein caution'},
-  {h:'Defence Budget up 15% — Record order book for HAL, BEL',src:'Economic Times',time:'3d ago',impact:'Defence stocks mein strong rally expected'},
-  {h:'PLI Scheme expansion — Electronics, Solar Manufacturing',src:'Mint',time:'3d ago',impact:'Manufacturing stocks positive'},
+let NEWS_DATA = [];
+const NEWS_RSS_FEEDS = [
+  'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
+  'https://www.moneycontrol.com/rss/marketreports.xml',
 ];
+
+async function fetchLiveNews() {
+  const newsEl = document.getElementById('newsList');
+  if (newsEl) newsEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:16px;text-align:center;"><div class="spinner" style="display:inline-block;margin-right:8px;"></div>Live news load ho rahi hai...</div>';
+  for (const rss of NEWS_RSS_FEEDS) {
+    try {
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`;
+      const resp = await fetch(proxy, { signal: AbortSignal.timeout(9000) });
+      if (!resp.ok) continue;
+      const json = await resp.json();
+      const xml = json.contents;
+      if (!xml) continue;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xml, 'text/xml');
+      const items = [...doc.querySelectorAll('item')].slice(0, 8);
+      if (!items.length) continue;
+      NEWS_DATA = items.map(item => {
+        const title = item.querySelector('title')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g,'').trim() || '';
+        const desc = item.querySelector('description')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g,'').replace(/<[^>]+>/g,'').trim().slice(0,130) || '';
+        const pub = item.querySelector('pubDate')?.textContent || '';
+        const src = rss.includes('economictimes') ? 'Economic Times' : 'Moneycontrol';
+        const link = item.querySelector('link')?.textContent?.trim() || '#';
+        let timeAgo = '';
+        if (pub) { const diff = Date.now() - new Date(pub).getTime(); const hrs = Math.floor(diff/3600000); timeAgo = hrs < 1 ? 'Just now' : hrs < 24 ? hrs+'h ago' : Math.floor(hrs/24)+'d ago'; }
+        return { h: title, src, time: timeAgo, impact: desc, link };
+      }).filter(n => n.h);
+      if (NEWS_DATA.length) { renderNews(); return; }
+    } catch(e) { continue; }
+  }
+  NEWS_DATA = [
+    {h:'RBI Monetary Policy — Interest Rates Unchanged at 6.5%',src:'Economic Times',time:'2h ago',impact:'Banking sector stable, Real Estate ke liye positive sign',link:'#'},
+    {h:'IT sector order book strong — TCS, Infosys Q4 beat estimates',src:'Mint',time:'6h ago',impact:'IT stocks mein bullish momentum continue hoga',link:'#'},
+    {h:'India GDP 7.2% — IMF revises forecast upward',src:'Reuters',time:'1d ago',impact:'Broad market positive — infrastructure, banking benefit',link:'#'},
+    {h:'Defence Budget up 15% — Record order book for HAL, BEL',src:'Economic Times',time:'3d ago',impact:'Defence stocks mein strong rally expected',link:'#'},
+  ];
+  renderNews();
+}
 function renderNews() {
-  document.getElementById('newsList').innerHTML = NEWS_DATA.map(n=>`
-    <div class="news-card">
+  const el = document.getElementById('newsList');
+  if (!el) return;
+  el.innerHTML = NEWS_DATA.length ? NEWS_DATA.map(n=>`
+    <div class="news-card" style="cursor:pointer;" onclick="if('${n.link}'!='#')window.open('${n.link}','_blank')">
       <div class="news-headline">${n.h}</div>
-      <div class="news-meta"><span>${n.src}</span><span>${n.time}</span></div>
-      <div class="news-impact">💡 Impact: ${n.impact}</div>
+      <div class="news-meta"><span>📰 ${n.src}</span><span>🕐 ${n.time}</span></div>
+      ${n.impact ? `<div class="news-impact">💡 ${n.impact}</div>` : ''}
     </div>
-  `).join('');
+  `).join('') : '<div style="color:var(--text3);font-size:12px;padding:16px;">News load nahi hui. Refresh karo.</div>';
 }
 function loadNewsAI() {
   const panel = document.getElementById('newsAiPanel');
@@ -2126,18 +2159,44 @@ function removePort(id) {
 // ═══════════════════════════════════════════════════
 //  MARKET TICKER
 // ═══════════════════════════════════════════════════
-function updateMarketTicker() {
-  const nifty = Math.round(24820 + Math.random()*120-60);
-  const sensex = Math.round(81800 + Math.random()*400-200);
-  const bn = Math.round(52300 + Math.random()*250-125);
-  const nChg = +(Math.random()*2.4-0.6).toFixed(2);
-  document.getElementById('nifty').textContent = nifty.toLocaleString('en-IN');
-  document.getElementById('niftyChg').textContent = (nChg>=0?'+':'')+nChg+'%';
-  document.getElementById('niftyChg').className = 'mkt-chg '+(nChg>=0?'pos':'neg');
-  document.getElementById('sensex').textContent = sensex.toLocaleString('en-IN');
-  document.getElementById('banknifty').textContent = bn.toLocaleString('en-IN');
-  document.getElementById('c-nifty').textContent = nifty.toLocaleString('en-IN');
-  document.getElementById('c-sensex').textContent = sensex.toLocaleString('en-IN');
+async function updateMarketTicker() {
+  // Yahoo Finance symbols: NSE/BSE indices + Gold + Crude + USD/INR
+  const symbols = [
+    { sym: '%5ENSEI',    id: 'nifty',    chgId: 'niftyChg',    cId: 'c-nifty',  prefix: '' },
+    { sym: '%5EBSESN',   id: 'sensex',   chgId: 'sensexChg',   cId: 'c-sensex', prefix: '' },
+    { sym: '%5ENSEBANK', id: 'banknifty',chgId: 'bankniftyChg',cId: null,       prefix: '' },
+    { sym: '%5ENSMIDCP', id: 'midcap',   chgId: 'midcapChg',   cId: null,       prefix: '' },
+    { sym: '%5ENSSMLCP', id: 'smallcap', chgId: 'smallcapChg', cId: null,       prefix: '' },
+    { sym: 'USDINR%3DX', id: 'usdinr',   chgId: 'usdinrChg',   cId: 'c-usd',    prefix: '₹', decimals: 2 },
+    { sym: 'GC%3DF',     id: 'gold',     chgId: 'goldChg',     cId: null,       prefix: '$' },
+    { sym: 'CL%3DF',     id: 'crude',    chgId: 'crudeChg',    cId: null,       prefix: '$' },
+  ];
+
+  for (const s of symbols) {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${s.sym}?interval=1d&range=2d`;
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const resp = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
+      if (!resp.ok) continue;
+      const json = await resp.json();
+      const data = JSON.parse(json.contents);
+      const meta = data?.chart?.result?.[0]?.meta;
+      if (!meta?.regularMarketPrice) continue;
+
+      const price = meta.regularMarketPrice;
+      const prev  = meta.chartPreviousClose || price;
+      const chgPct = +((( price - prev ) / prev * 100).toFixed(2));
+      const cls = chgPct > 0 ? 'pos' : chgPct < 0 ? 'neg' : 'neu';
+      const chgStr = (chgPct >= 0 ? '+' : '') + chgPct + '%';
+      const dec = s.decimals || 0;
+      const formatted = s.prefix + price.toLocaleString('en-IN', { maximumFractionDigits: dec, minimumFractionDigits: dec });
+
+      const el = document.getElementById(s.id);
+      if (el) { el.textContent = formatted; el.className = 'mkt-val ' + cls; }
+      if (s.chgId) { const ce = document.getElementById(s.chgId); if(ce){ce.textContent=chgStr;ce.className='mkt-chg '+cls;} }
+      if (s.cId)   { const ci = document.getElementById(s.cId);   if(ci){ci.textContent=formatted;ci.className='mc-val '+cls;} }
+    } catch(e) { /* silent */ }
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -2205,8 +2264,21 @@ function loadAllData() {
   renderHomeScreener();
   renderPortfolio();
   updateMarketTicker();
-  setInterval(updateMarketTicker, 10000);
-  setTimeout(loadDailyAI, 600);
+  setInterval(updateMarketTicker, 60000);
+  fetchLiveNews();
+  setInterval(fetchLiveNews, 300000);
+  setTimeout(loadDailyAI, 800);
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  const msg = document.getElementById('apiKeyMsg');
+  if (!key.startsWith('AIza') && !key.startsWith('AIza')) { if(key.length < 20){ msg.style.color='var(--red)'; msg.textContent='❌ Invalid key! AIzaSy... se shuru hona chahiye'; return; } }
+  DB.set('anthropicKey', key);
+  msg.style.color='var(--g1)';
+  msg.textContent='✅ Key save ho gayi! Ab AI kaam karega.';
+  document.getElementById('apiKeyInput').value='';
+  setTimeout(()=>{ msg.textContent=''; }, 3000);
 }
 </script>
 </body>
